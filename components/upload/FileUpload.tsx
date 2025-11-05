@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Upload, FileText, AlertCircle, Download } from 'lucide-react';
+import { Upload, FileText, AlertCircle, Download, Scan } from 'lucide-react';
+import Link from 'next/link';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import { parseCSV, generateCSVTemplate } from '@/lib/parsers/csvParser';
@@ -114,9 +115,15 @@ export default function FileUpload({ onReportLoaded }: FileUploadProps) {
           <h1 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
             政治資金収支報告書 可視化ツール
           </h1>
-          <p className="text-text-secondary text-base md:text-lg">
+          <p className="text-text-secondary text-base md:text-lg mb-4">
             PDFまたはCSVファイルをアップロードして、政治資金の流れを可視化します
           </p>
+          <Link href="/ocr">
+            <Button variant="outline" size="sm" className="inline-flex items-center gap-2">
+              <Scan className="w-4 h-4" />
+              PDF→CSV変換ツール（OCR）を使う
+            </Button>
+          </Link>
         </div>
 
         <div

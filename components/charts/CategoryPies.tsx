@@ -35,6 +35,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
         amount: otherAmount,
         percentage: Number(((otherAmount / total) * 100).toFixed(1)),
         color: '#9CA3AF', // Gray color for "Other"
+        count: 0, // Combined count not tracked for "Other" category
       });
     }
 
