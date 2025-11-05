@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import vision from '@google-cloud/vision';
+import { ImageAnnotatorClient } from '@google-cloud/vision';
 import { Storage } from '@google-cloud/storage';
 
 // Configure route to handle larger file uploads (up to 20MB)
@@ -35,18 +35,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Initialize Google Cloud Vision client
-    let client: vision.ImageAnnotatorClient;
+    let client: ImageAnnotatorClient;
 
     try {
       // Try to use credentials from environment variable
       if (process.env.GOOGLE_CREDENTIALS) {
         const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
-        client = new vision.ImageAnnotatorClient({
+        client = new ImageAnnotatorClient({
           credentials,
         });
       } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
         // Use default credentials from file path
-        client = new vision.ImageAnnotatorClient();
+        client = new ImageAnnotatorClient();
       } else {
         // Fallback: Use OCR.space API if no Google credentials
         return await fallbackToOCRSpace(file);
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
 
 
 // Process PDF using async API with Cloud Storage
-async function processPDFAsync(file: File, buffer: Buffer, visionClient: vision.ImageAnnotatorClient) {
+async function processPDFAsync(file: File, buffer: Buffer, visionClient: ImageAnnotatorClient) {
   try {
     console.log(`\n========================================`);
     console.log(`Processing PDF: ${file.name}`);
