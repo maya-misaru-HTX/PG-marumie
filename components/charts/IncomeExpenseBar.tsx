@@ -64,7 +64,7 @@ export default function IncomeExpenseBar({ summary }: IncomeExpenseBarProps) {
         <BarChart data={data} layout="vertical" barCategoryGap={25} barSize={60} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" horizontalPoints={[50, 150]} />
           <XAxis type="number" tickFormatter={(value) => `¥${(value / 10000).toFixed(0)}万`} />
-          <YAxis type="category" dataKey="name" width={60} tick={{ verticalAnchor: 'middle' }} tickLine={false} axisLine={false} />
+          <YAxis type="category" dataKey="name" width={60} tickLine={false} axisLine={false} />
           <Tooltip
             formatter={(value: number) => formatCurrency(value)}
             contentStyle={{
@@ -95,7 +95,7 @@ export default function IncomeExpenseBar({ summary }: IncomeExpenseBarProps) {
         <BarChart data={data} layout="vertical" barCategoryGap={20} barSize={50} margin={{ top: 10, right: 10, bottom: 10, left: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" horizontalPoints={[45, 135]} />
           <XAxis type="number" tickFormatter={(value) => `¥${(value / 10000).toFixed(0)}万`} style={{ fontSize: '11px' }} />
-          <YAxis type="category" dataKey="name" width={50} tick={{ verticalAnchor: 'middle', fontSize: 12 }} tickLine={false} axisLine={false} />
+          <YAxis type="category" dataKey="name" width={50} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
           <Tooltip
             formatter={(value: number) => formatCurrency(value)}
             contentStyle={{
