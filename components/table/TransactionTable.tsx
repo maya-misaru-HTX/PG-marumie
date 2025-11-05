@@ -91,6 +91,31 @@ export default function TransactionTable({ transactions }: TransactionTableProps
     );
   };
 
+  const PaginationControls = () => (
+    <div className="flex items-center justify-between">
+      <p className="text-sm text-text-secondary">
+        {(currentPage - 1) * itemsPerPage + 1}-
+        {Math.min(currentPage * itemsPerPage, filteredTransactions.length)} / {filteredTransactions.length}件
+      </p>
+      <div className="flex gap-2">
+        <button
+          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          disabled={currentPage === 1}
+          className="px-4 py-2 border-2 border-neutral-200 rounded-[24px] disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary-500"
+        >
+          前へ
+        </button>
+        <button
+          onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 border-2 border-neutral-200 rounded-[24px] disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary-500"
+        >
+          次へ
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <Card>
       <div className="mb-6">
@@ -136,6 +161,13 @@ export default function TransactionTable({ transactions }: TransactionTableProps
           ))}
         </select>
       </div>
+
+      {/* Pagination - Top */}
+      {totalPages > 1 && (
+        <div className="mb-4">
+          <PaginationControls />
+        </div>
+      )}
 
       {/* Table */}
       <div className="overflow-x-auto">
@@ -216,29 +248,10 @@ export default function TransactionTable({ transactions }: TransactionTableProps
         </table>
       </div>
 
-      {/* Pagination */}
+      {/* Pagination - Bottom */}
       {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between">
-          <p className="text-sm text-text-secondary">
-            {(currentPage - 1) * itemsPerPage + 1}-
-            {Math.min(currentPage * itemsPerPage, filteredTransactions.length)} / {filteredTransactions.length}件
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="px-4 py-2 border-2 border-neutral-200 rounded-[24px] disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary-500"
-            >
-              前へ
-            </button>
-            <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 border-2 border-neutral-200 rounded-[24px] disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary-500"
-            >
-              次へ
-            </button>
-          </div>
+        <div className="mt-6">
+          <PaginationControls />
         </div>
       )}
     </Card>
