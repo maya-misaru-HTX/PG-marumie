@@ -52,10 +52,15 @@ export function PdfPromptGenerator({ autoStartFile }: PdfPromptGeneratorProps = 
 
   // Auto-start processing when autoStartFile is provided
   useEffect(() => {
-    if (!autoStartFile) return;
+    if (!autoStartFile) {
+      console.log('PdfPromptGenerator: No autoStartFile, skipping');
+      return;
+    }
 
     const startAutoProcess = async () => {
       console.log('PdfPromptGenerator: Auto-start triggered with file:', autoStartFile.name);
+      console.log('PdfPromptGenerator: File type:', autoStartFile.type);
+      console.log('PdfPromptGenerator: File size:', autoStartFile.size);
 
       // Reset all state for new file
       setError('');
@@ -65,16 +70,24 @@ export function PdfPromptGenerator({ autoStartFile }: PdfPromptGeneratorProps = 
       setProcessingProgress(0);
       setCurrentPage(0);
       setTotalPages(0);
-      setSelectedFile(null);
 
-      // Validate file
-      if (autoStartFile.type !== 'application/pdf') {
+      // Set selected file first
+      setSelectedFile(autoStartFile);
+
+      // Validate file - check both MIME type and extension
+      const isPDF = autoStartFile.type === 'application/pdf' || autoStartFile.name.toLowerCase().endsWith('.pdf');
+
+      if (!isPDF) {
+        console.error('PdfPromptGenerator: Not a PDF file');
         setError('PDFファイルのみ対応しています。');
         return;
       }
 
-      const fileSizeMB = autoStartFile.size / (1024 / 1024);
+      const fileSizeMB = autoStartFile.size / (1024 * 1024);
+      console.log('PdfPromptGenerator: File size MB:', fileSizeMB);
+
       if (fileSizeMB > MAX_FILE_SIZE_MB) {
+        console.error('PdfPromptGenerator: File too large');
         setError(`ファイルサイズが大きすぎます（${fileSizeMB.toFixed(1)}MB）。${MAX_FILE_SIZE_MB}MB以下のファイルを選択してください。`);
         return;
       }
@@ -82,8 +95,6 @@ export function PdfPromptGenerator({ autoStartFile }: PdfPromptGeneratorProps = 
       if (fileSizeMB > WARN_FILE_SIZE_MB) {
         setWarning(`ファイルサイズが${fileSizeMB.toFixed(1)}MBです。処理に時間がかかる場合があります。`);
       }
-
-      setSelectedFile(autoStartFile);
 
       // Start processing immediately
       console.log('PdfPromptGenerator: Starting OCR processing...');
@@ -95,28 +106,34 @@ export function PdfPromptGenerator({ autoStartFile }: PdfPromptGeneratorProps = 
         const formData = new FormData();
         formData.append('file', autoStartFile);
 
+        console.log('PdfPromptGenerator: Calling /api/ocr...');
         const response = await fetch('/api/ocr', {
           method: 'POST',
           body: formData,
         });
 
+        console.log('PdfPromptGenerator: Response status:', response.status);
+
         if (!response.ok) {
           const errorData = await response.json();
+          console.error('PdfPromptGenerator: API error:', errorData);
           throw new Error(errorData.error || '文字認識に失敗しました');
         }
 
         const data = await response.json();
+        console.log('PdfPromptGenerator: API response:', data);
 
         if (data.success && data.text) {
           const finalPrompt = MAIN_PROMPT + data.text;
           setResultPrompt(finalPrompt);
           setProgress('完了しました！文字認識が成功しました。');
           setProcessingProgress(100);
+          console.log('PdfPromptGenerator: OCR completed successfully');
         } else {
           throw new Error('OCRテキストの抽出に失敗しました');
         }
       } catch (error) {
-        console.error('OCR processing error:', error);
+        console.error('PdfPromptGenerator: OCR processing error:', error);
         setError(error instanceof Error ? error.message : '文字認識中にエラーが発生しました');
       } finally {
         setIsProcessing(false);
