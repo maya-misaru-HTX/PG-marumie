@@ -52,39 +52,79 @@ export function PdfPromptGenerator({ autoStartFile }: PdfPromptGeneratorProps = 
 
   // Auto-start processing when autoStartFile is provided
   useEffect(() => {
-    if (autoStartFile && !isProcessing) {
-      const startAutoProcess = async () => {
-        // Reset all state for new file
-        setError('');
-        setWarning('');
-        setResultPrompt('');
-        setProgress('');
-        setProcessingProgress(0);
+    if (!autoStartFile) return;
+
+    const startAutoProcess = async () => {
+      console.log('PdfPromptGenerator: Auto-start triggered with file:', autoStartFile.name);
+
+      // Reset all state for new file
+      setError('');
+      setWarning('');
+      setResultPrompt('');
+      setProgress('');
+      setProcessingProgress(0);
+      setCurrentPage(0);
+      setTotalPages(0);
+      setSelectedFile(null);
+
+      // Validate file
+      if (autoStartFile.type !== 'application/pdf') {
+        setError('PDFファイルのみ対応しています。');
+        return;
+      }
+
+      const fileSizeMB = autoStartFile.size / (1024 / 1024);
+      if (fileSizeMB > MAX_FILE_SIZE_MB) {
+        setError(`ファイルサイズが大きすぎます（${fileSizeMB.toFixed(1)}MB）。${MAX_FILE_SIZE_MB}MB以下のファイルを選択してください。`);
+        return;
+      }
+
+      if (fileSizeMB > WARN_FILE_SIZE_MB) {
+        setWarning(`ファイルサイズが${fileSizeMB.toFixed(1)}MBです。処理に時間がかかる場合があります。`);
+      }
+
+      setSelectedFile(autoStartFile);
+
+      // Start processing immediately
+      console.log('PdfPromptGenerator: Starting OCR processing...');
+      setIsProcessing(true);
+      setProgress('文字認識を開始しています...');
+      setProcessingProgress(0);
+
+      try {
+        const formData = new FormData();
+        formData.append('file', autoStartFile);
+
+        const response = await fetch('/api/ocr', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || '文字認識に失敗しました');
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.text) {
+          const finalPrompt = MAIN_PROMPT + data.text;
+          setResultPrompt(finalPrompt);
+          setProgress('完了しました！文字認識が成功しました。');
+          setProcessingProgress(100);
+        } else {
+          throw new Error('OCRテキストの抽出に失敗しました');
+        }
+      } catch (error) {
+        console.error('OCR processing error:', error);
+        setError(error instanceof Error ? error.message : '文字認識中にエラーが発生しました');
+      } finally {
+        setIsProcessing(false);
         setCurrentPage(0);
-        setTotalPages(0);
+      }
+    };
 
-        // Validate file
-        if (autoStartFile.type !== 'application/pdf') {
-          setError('PDFファイルのみ対応しています。');
-          return;
-        }
-
-        const fileSizeMB = autoStartFile.size / (1024 * 1024);
-        if (fileSizeMB > MAX_FILE_SIZE_MB) {
-          setError(`ファイルサイズが大きすぎます（${fileSizeMB.toFixed(1)}MB）。${MAX_FILE_SIZE_MB}MB以下のファイルを選択してください。`);
-          return;
-        }
-
-        if (fileSizeMB > WARN_FILE_SIZE_MB) {
-          setWarning(`ファイルサイズが${fileSizeMB.toFixed(1)}MBです。処理に時間がかかる場合があります。`);
-        }
-
-        setSelectedFile(autoStartFile);
-        await handleProcess(autoStartFile);
-      };
-
-      startAutoProcess();
-    }
+    startAutoProcess();
   }, [autoStartFile]);
 
   // OCR.space APIを使用してPDFを処理
