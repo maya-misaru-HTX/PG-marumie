@@ -26,9 +26,10 @@ export default function IncomeExpenseBar({ summary }: IncomeExpenseBarProps) {
     },
   ];
 
-  const formatLabel = (value: number) => {
-    if (value === 0) return '';
-    return `¥${(value / 10000).toFixed(0)}万`;
+  const formatLabel = (value: any) => {
+    const numValue = typeof value === 'number' ? value : 0;
+    if (numValue === 0) return '';
+    return `¥${(numValue / 10000).toFixed(0)}万`;
   };
 
   return (
