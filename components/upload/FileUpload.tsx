@@ -66,10 +66,14 @@ export default function FileUpload({ onReportLoaded, onPdfError }: FileUploadPro
       let report: ExpenseReport;
 
       if (fileType.endsWith('.pdf')) {
-        setUploadProgress('PDFを解析しています...');
-        // Dynamically import PDF parser only on client side when needed
-        const { parsePDF } = await import('@/lib/parsers/pdfParser');
-        report = await parsePDF(file);
+        // For PDFs, always show OCR tool instead of trying to parse
+        // This provides a better workflow for converting PDF to CSV via ChatGPT
+        setIsProcessing(false);
+        setUploadProgress('');
+        if (onPdfError) {
+          onPdfError(file);
+        }
+        return;
       } else if (fileType.endsWith('.csv')) {
         setUploadProgress('CSVを解析しています...');
         const text = await file.text();
@@ -94,11 +98,6 @@ export default function FileUpload({ onReportLoaded, onPdfError }: FileUploadPro
       );
       setIsProcessing(false);
       setUploadProgress('');
-
-      // Notify parent if PDF parsing failed
-      if (file.name.toLowerCase().endsWith('.pdf') && onPdfError) {
-        onPdfError(file);
-      }
     }
   };
 
