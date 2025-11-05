@@ -30,6 +30,17 @@ export async function parsePDF(file: File): Promise<ExpenseReport> {
   const summary = extractSummary(fullText);
   const transactions = extractTransactions(fullText, pages);
 
+  // Validate that parsing succeeded
+  if (summary.incomeTotal === 0 && summary.expenseTotal === 0 && transactions.length === 0) {
+    throw new Error(
+      'PDFからデータを抽出できませんでした。PDFの形式が対応していない可能性があります。\n\n' +
+      'CSVファイルでのアップロードをお試しください：\n' +
+      '1. 画面下部の「CSVテンプレートをダウンロード」ボタンをクリック\n' +
+      '2. ChatGPTなどのAIツールでPDFをCSV形式に変換\n' +
+      '3. 変換したCSVファイルをアップロード'
+    );
+  }
+
   const report: ExpenseReport = {
     politician,
     summary,

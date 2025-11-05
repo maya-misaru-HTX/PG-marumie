@@ -13,6 +13,37 @@ interface CategoryPiesProps {
 export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
   const RADIAN = Math.PI / 180;
 
+  // Combine categories below 5% into "Other"
+  const combineSmallCategories = (categories: CategoryBreakdown[], total: number) => {
+    const threshold = 0.05; // 5%
+    const large: CategoryBreakdown[] = [];
+    let otherAmount = 0;
+
+    categories.forEach((cat) => {
+      const percentage = cat.amount / total;
+      if (percentage >= threshold) {
+        large.push(cat);
+      } else {
+        otherAmount += cat.amount;
+      }
+    });
+
+    // Add "Other" category if there are small categories
+    if (otherAmount > 0) {
+      large.push({
+        category: 'その他',
+        amount: otherAmount,
+        percentage: Number(((otherAmount / total) * 100).toFixed(1)),
+        color: '#9CA3AF', // Gray color for "Other"
+      });
+    }
+
+    return large;
+  };
+
+  const incomeData = combineSmallCategories(income.categories, income.total);
+  const expenseData = combineSmallCategories(expenses.categories, expenses.total);
+
   const renderCustomizedLabel = ({
     cx,
     cy,
@@ -23,7 +54,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
   }: any) => {
     if (percent < 0.05) return null; // Don't show labels for slices < 5%
 
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.65;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
@@ -32,7 +63,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
         x={x}
         y={y}
         fill="white"
-        textAnchor={x > cx ? 'start' : 'end'}
+        textAnchor="middle"
         dominantBaseline="central"
         className="text-sm font-bold"
       >
@@ -55,7 +86,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={income.categories}
+                  data={incomeData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -63,8 +94,10 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="amount"
+                  startAngle={90}
+                  endAngle={-270}
                 >
-                  {income.categories.map((entry, index) => (
+                  {incomeData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -80,7 +113,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
             </ResponsiveContainer>
 
             <div className="mt-6 space-y-2">
-              {income.categories.slice(0, 5).map((cat) => (
+              {incomeData.map((cat) => (
                 <div key={cat.category} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <div
@@ -113,7 +146,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
-                  data={expenses.categories}
+                  data={expenseData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -121,8 +154,10 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="amount"
+                  startAngle={90}
+                  endAngle={-270}
                 >
-                  {expenses.categories.map((entry, index) => (
+                  {expenseData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -138,7 +173,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
             </ResponsiveContainer>
 
             <div className="mt-6 space-y-2">
-              {expenses.categories.slice(0, 5).map((cat) => (
+              {expenseData.map((cat) => (
                 <div key={cat.category} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <div

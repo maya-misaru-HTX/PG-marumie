@@ -8,7 +8,9 @@ import SummaryCards from '@/components/summary/SummaryCards';
 import IncomeExpenseBar from '@/components/charts/IncomeExpenseBar';
 import CategoryPies from '@/components/charts/CategoryPies';
 import MonthlyTrend from '@/components/charts/MonthlyTrend';
+import TopDonors from '@/components/charts/TopDonors';
 import TransactionTable from '@/components/table/TransactionTable';
+import SectionNav from '@/components/navigation/SectionNav';
 import Button from '@/components/ui/Button';
 import { Share2, ArrowLeft } from 'lucide-react';
 
@@ -78,54 +80,78 @@ function ReportContent() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-12 px-4 md:px-8">
-      <div className="max-w-[1032px] mx-auto space-y-8">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <Button
-              variant="outline"
-              onClick={() => router.push('/')}
-              className="mb-4 flex items-center gap-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              戻る
-            </Button>
-            <h1 className="text-3xl md:text-4xl font-bold text-text-primary">
-              {report.politician.organization}
-            </h1>
-            <p className="text-text-secondary mt-2">
-              {report.politician.name} | {report.politician.fiscalYear}年度
-            </p>
-          </div>
-          <div className="flex gap-3">
+    <div className="min-h-screen bg-neutral-50">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-50 bg-white border-b-2 border-neutral-200 shadow-sm">
+        <div className="max-w-[1032px] mx-auto px-4 md:px-8 py-4">
+          <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide">
+            {/* Back Button + Politician Info */}
+            <div className="flex items-center gap-4 flex-shrink-0">
+              <Button
+                variant="outline"
+                onClick={() => router.push('/')}
+                className="flex items-center gap-2 whitespace-nowrap"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                戻る
+              </Button>
+              <div>
+                <h1 className="text-lg md:text-xl font-bold text-text-primary whitespace-nowrap">
+                  {report.politician.name}
+                </h1>
+                <p className="text-xs text-text-secondary whitespace-nowrap">
+                  {report.politician.fiscalYear}年度
+                </p>
+              </div>
+            </div>
+
+            {/* Section Navigation */}
+            <div className="flex-1 min-w-0">
+              <SectionNav />
+            </div>
+
+            {/* Share Button */}
             <Button
               variant={shareSuccess ? 'primary' : 'outline'}
               onClick={handleShare}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
             >
               <Share2 className="w-4 h-4" />
               {shareSuccess ? 'コピーしました！' : 'URLをシェア'}
             </Button>
           </div>
         </div>
+      </div>
 
-        {/* Summary Cards */}
-        <SummaryCards summary={report.summary} />
+      {/* Content Sections */}
+      <div className="px-4 md:px-8 py-8">
+        <div className="max-w-[1032px] mx-auto space-y-8">
+          {/* Summary Cards */}
+          <SummaryCards summary={report.summary} />
 
-        {/* Income vs Expense Bar Chart */}
-        <IncomeExpenseBar summary={report.summary} />
+          {/* Income & Expense Section */}
+          <div id="income-expense" className="scroll-mt-24 space-y-8">
+            <IncomeExpenseBar summary={report.summary} />
+            <CategoryPies income={report.income} expenses={report.expenses} />
+          </div>
 
-        {/* Category Pie Charts */}
-        <CategoryPies income={report.income} expenses={report.expenses} />
+          {/* Monthly Trend Section */}
+          {report.monthlyData && report.monthlyData.length > 0 && (
+            <div id="monthly-trend" className="scroll-mt-24">
+              <MonthlyTrend monthlyData={report.monthlyData} />
+            </div>
+          )}
 
-        {/* Monthly Trend */}
-        {report.monthlyData && report.monthlyData.length > 0 && (
-          <MonthlyTrend monthlyData={report.monthlyData} />
-        )}
+          {/* Top Donors Section */}
+          <div id="top-donors" className="scroll-mt-24">
+            <TopDonors transactions={report.transactions} />
+          </div>
 
-        {/* Transaction Table */}
-        <TransactionTable transactions={report.transactions} />
+          {/* Transaction Table Section */}
+          <div id="transactions" className="scroll-mt-24">
+            <TransactionTable transactions={report.transactions} />
+          </div>
+        </div>
       </div>
     </div>
   );

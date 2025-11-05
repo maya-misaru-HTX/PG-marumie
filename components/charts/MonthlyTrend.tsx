@@ -20,18 +20,21 @@ interface MonthlyTrendProps {
 }
 
 export default function MonthlyTrend({ monthlyData }: MonthlyTrendProps) {
+  // Transform data to show expenses as negative values
+  const chartData = monthlyData.map((data) => ({
+    ...data,
+    expense: -data.expense, // Make expense negative for downward bars
+  }));
+
   return (
     <Card>
       <div className="mb-6">
         <h2 className="text-xl md:text-2xl font-bold text-text-primary">月ごとの収支の推移</h2>
         <p className="text-text-secondary mt-1">今年の月ごとの収入と支出</p>
-        <p className="text-sm text-text-secondary mt-2">
-          更新日時: {new Date().toLocaleString('ja-JP')}
-        </p>
       </div>
 
       <ResponsiveContainer width="100%" height={400}>
-        <ComposedChart data={monthlyData}>
+        <ComposedChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
           <XAxis
             dataKey="month"
@@ -45,7 +48,11 @@ export default function MonthlyTrend({ monthlyData }: MonthlyTrendProps) {
             tick={{ fontSize: 12 }}
           />
           <Tooltip
-            formatter={(value: number) => formatCurrency(value)}
+            formatter={(value: number, name: string) => {
+              // Show absolute value for expense in tooltip
+              const displayValue = name === '支出' ? Math.abs(value) : value;
+              return formatCurrency(displayValue);
+            }}
             labelStyle={{ color: '#1F2937', fontWeight: 'bold' }}
             contentStyle={{
               backgroundColor: 'white',

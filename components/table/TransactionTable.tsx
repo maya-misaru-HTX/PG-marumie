@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Transaction } from '@/lib/types';
 import { formatCurrency } from '@/lib/calculations/aggregations';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
-import { Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Check } from 'lucide-react';
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -16,17 +16,88 @@ type SortDirection = 'asc' | 'desc';
 
 export default function TransactionTable({ transactions }: TransactionTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [incomeCategoryFilter, setIncomeCategoryFilter] = useState<string[]>([]);
+  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState<string[]>([]);
+  const [isIncomeDropdownOpen, setIsIncomeDropdownOpen] = useState(false);
+  const [isExpenseDropdownOpen, setIsExpenseDropdownOpen] = useState(false);
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = useState(1);
+  const incomeDropdownRef = useRef<HTMLDivElement>(null);
+  const expenseDropdownRef = useRef<HTMLDivElement>(null);
   const itemsPerPage = 50;
 
-  // Get unique categories
-  const categories = useMemo(() => {
-    const cats = new Set(transactions.map((t) => t.category));
-    return Array.from(cats).sort();
+  // Get unique categories by type
+  const { incomeCategories, expenseCategories } = useMemo(() => {
+    const incomeCats = new Set(
+      transactions.filter((t) => t.type === 'income').map((t) => t.category)
+    );
+    const expenseCats = new Set(
+      transactions.filter((t) => t.type === 'expense').map((t) => t.category)
+    );
+
+    // Priority order for expense categories
+    const expensePriority = [
+      '寄附・交付金',
+      '機関紙誌の発行',
+      '組織活動費',
+      '調査研究費',
+      '選挙関係費',
+    ];
+    const bottomCategories = ['その他の経費'];
+
+    const sortedExpenseCats = Array.from(expenseCats).sort((a, b) => {
+      // Check if either is in bottom categories
+      const aIsBottom = bottomCategories.includes(a);
+      const bIsBottom = bottomCategories.includes(b);
+
+      // If both are bottom categories, maintain order
+      if (aIsBottom && bIsBottom) return 0;
+      // If only a is bottom, b comes first
+      if (aIsBottom) return 1;
+      // If only b is bottom, a comes first
+      if (bIsBottom) return -1;
+
+      const aIndex = expensePriority.indexOf(a);
+      const bIndex = expensePriority.indexOf(b);
+
+      // If both are in priority list, sort by priority order
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex;
+      }
+      // If only a is in priority list, a comes first
+      if (aIndex !== -1) return -1;
+      // If only b is in priority list, b comes first
+      if (bIndex !== -1) return 1;
+      // Otherwise, sort alphabetically
+      return a.localeCompare(b);
+    });
+
+    return {
+      incomeCategories: Array.from(incomeCats).sort(),
+      expenseCategories: sortedExpenseCats,
+    };
   }, [transactions]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        incomeDropdownRef.current &&
+        !incomeDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsIncomeDropdownOpen(false);
+      }
+      if (
+        expenseDropdownRef.current &&
+        !expenseDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsExpenseDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Filter and sort transactions
   const filteredTransactions = useMemo(() => {
@@ -43,9 +114,25 @@ export default function TransactionTable({ transactions }: TransactionTableProps
       );
     }
 
-    // Category filter
-    if (categoryFilter !== 'all') {
-      filtered = filtered.filter((t) => t.category === categoryFilter);
+    // Category filter - check both income and expense filters
+    if (incomeCategoryFilter.length > 0 || expenseCategoryFilter.length > 0) {
+      filtered = filtered.filter((t) => {
+        if (t.type === 'income') {
+          // If income filter is set, check if category is included
+          // If income filter is NOT set but expense filter IS set, exclude all income
+          return incomeCategoryFilter.length > 0
+            ? incomeCategoryFilter.includes(t.category)
+            : false;
+        }
+        if (t.type === 'expense') {
+          // If expense filter is set, check if category is included
+          // If expense filter is NOT set but income filter IS set, exclude all expenses
+          return expenseCategoryFilter.length > 0
+            ? expenseCategoryFilter.includes(t.category)
+            : false;
+        }
+        return false;
+      });
     }
 
     // Sort
@@ -64,7 +151,14 @@ export default function TransactionTable({ transactions }: TransactionTableProps
     });
 
     return filtered;
-  }, [transactions, searchQuery, categoryFilter, sortField, sortDirection]);
+  }, [
+    transactions,
+    searchQuery,
+    incomeCategoryFilter,
+    expenseCategoryFilter,
+    sortField,
+    sortDirection,
+  ]);
 
   // Pagination
   const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
@@ -80,6 +174,38 @@ export default function TransactionTable({ transactions }: TransactionTableProps
       setSortField(field);
       setSortDirection('desc');
     }
+  };
+
+  const toggleIncomeCategory = (category: string) => {
+    setIncomeCategoryFilter((prev) => {
+      if (prev.includes(category)) {
+        return prev.filter((c) => c !== category);
+      } else {
+        return [...prev, category];
+      }
+    });
+    setCurrentPage(1);
+  };
+
+  const toggleExpenseCategory = (category: string) => {
+    setExpenseCategoryFilter((prev) => {
+      if (prev.includes(category)) {
+        return prev.filter((c) => c !== category);
+      } else {
+        return [...prev, category];
+      }
+    });
+    setCurrentPage(1);
+  };
+
+  const clearIncomeCategoryFilter = () => {
+    setIncomeCategoryFilter([]);
+    setCurrentPage(1);
+  };
+
+  const clearExpenseCategoryFilter = () => {
+    setExpenseCategoryFilter([]);
+    setCurrentPage(1);
   };
 
   const SortIcon = ({ field }: { field: SortField }) => {
@@ -144,22 +270,113 @@ export default function TransactionTable({ transactions }: TransactionTableProps
           />
         </div>
 
-        {/* Category Filter */}
-        <select
-          value={categoryFilter}
-          onChange={(e) => {
-            setCategoryFilter(e.target.value);
-            setCurrentPage(1);
-          }}
-          className="px-4 py-2 border-2 border-neutral-200 rounded-[24px] focus:border-primary-500 focus:outline-none bg-white"
-        >
-          <option value="all">すべてのカテゴリー</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
+        {/* Income Category Filter - Multi-select */}
+        <div ref={incomeDropdownRef} className="relative">
+          <button
+            onClick={() => setIsIncomeDropdownOpen(!isIncomeDropdownOpen)}
+            className="w-[200px] px-4 py-2 border-2 border-neutral-200 rounded-[24px] focus:border-primary-500 focus:outline-none bg-white flex items-center gap-2"
+          >
+            <span className="flex-1 text-left truncate">
+              {incomeCategoryFilter.length === 0
+                ? '収入カテゴリー'
+                : incomeCategoryFilter.length === 1
+                ? incomeCategoryFilter[0]
+                : `収入 ${incomeCategoryFilter.length}件選択中`}
+            </span>
+            <ChevronDown className="w-4 h-4 flex-shrink-0" />
+          </button>
+
+          {isIncomeDropdownOpen && (
+            <div className="absolute z-10 mt-2 w-full max-w-sm bg-white border-2 border-neutral-200 rounded-[16px] shadow-lg">
+              <div className="max-h-[400px] overflow-y-auto">
+                {/* Clear All */}
+                <div className="px-4 py-3 border-b border-neutral-200">
+                  <button
+                    onClick={clearIncomeCategoryFilter}
+                    className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                  >
+                    すべて解除
+                  </button>
+                </div>
+
+                {/* Category options */}
+                {incomeCategories.map((cat) => (
+                <label
+                  key={cat}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 cursor-pointer"
+                >
+                  <div className="relative flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={incomeCategoryFilter.includes(cat)}
+                      onChange={() => toggleIncomeCategory(cat)}
+                      className="w-5 h-5 rounded border-2 border-neutral-300 text-primary-500 focus:ring-2 focus:ring-primary-500 cursor-pointer"
+                    />
+                    {incomeCategoryFilter.includes(cat) && (
+                      <Check className="w-4 h-4 text-white absolute left-0.5 top-0.5 pointer-events-none" />
+                    )}
+                  </div>
+                  <span className="text-sm text-text-primary">{cat}</span>
+                </label>
+              ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Expense Category Filter - Multi-select */}
+        <div ref={expenseDropdownRef} className="relative">
+          <button
+            onClick={() => setIsExpenseDropdownOpen(!isExpenseDropdownOpen)}
+            className="w-[200px] px-4 py-2 border-2 border-neutral-200 rounded-[24px] focus:border-primary-500 focus:outline-none bg-white flex items-center gap-2"
+          >
+            <span className="flex-1 text-left truncate">
+              {expenseCategoryFilter.length === 0
+                ? '支出カテゴリー'
+                : expenseCategoryFilter.length === 1
+                ? expenseCategoryFilter[0]
+                : `支出 ${expenseCategoryFilter.length}件選択中`}
+            </span>
+            <ChevronDown className="w-4 h-4 flex-shrink-0" />
+          </button>
+
+          {isExpenseDropdownOpen && (
+            <div className="absolute z-10 mt-2 w-full max-w-sm bg-white border-2 border-neutral-200 rounded-[16px] shadow-lg">
+              <div className="max-h-[400px] overflow-y-auto">
+                {/* Clear All */}
+                <div className="px-4 py-3 border-b border-neutral-200">
+                  <button
+                    onClick={clearExpenseCategoryFilter}
+                    className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                  >
+                    すべて解除
+                  </button>
+                </div>
+
+                {/* Category options */}
+                {expenseCategories.map((cat) => (
+                <label
+                  key={cat}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 cursor-pointer"
+                >
+                  <div className="relative flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={expenseCategoryFilter.includes(cat)}
+                      onChange={() => toggleExpenseCategory(cat)}
+                      className="w-5 h-5 rounded border-2 border-neutral-300 text-primary-500 focus:ring-2 focus:ring-primary-500 cursor-pointer"
+                    />
+                    {expenseCategoryFilter.includes(cat) && (
+                      <Check className="w-4 h-4 text-white absolute left-0.5 top-0.5 pointer-events-none" />
+                    )}
+                  </div>
+                  <span className="text-sm text-text-primary">{cat}</span>
+                </label>
+              ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Pagination - Top */}

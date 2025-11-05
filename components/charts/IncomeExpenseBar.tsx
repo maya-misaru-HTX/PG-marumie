@@ -29,7 +29,7 @@ export default function IncomeExpenseBar({ summary }: IncomeExpenseBarProps) {
         <BarChart data={data} layout="vertical">
           <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
           <XAxis type="number" tickFormatter={(value) => `¥${(value / 10000).toFixed(0)}万`} />
-          <YAxis type="category" dataKey="name" />
+          <YAxis type="category" dataKey="name" hide={true} />
           <Tooltip
             formatter={(value: number) => formatCurrency(value)}
             contentStyle={{

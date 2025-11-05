@@ -167,34 +167,77 @@ export default function FileUpload({ onReportLoaded }: FileUploadProps) {
             <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-red-800">エラー</p>
-              <p className="text-sm text-red-700 mt-1">{error}</p>
+              <p className="text-sm text-red-700 mt-1 whitespace-pre-line">{error}</p>
             </div>
           </div>
         )}
 
-        <div className="mt-8 pt-8 border-t border-neutral-200">
-          <h2 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            CSVテンプレートをダウンロード
-          </h2>
-          <p className="text-text-secondary mb-4">
-            PDFファイルが読み込めない場合は、CSVファイルに変換してアップロードできます。
-            下記のテンプレートをダウンロードし、ChatGPTなどのAIツールでPDFからCSVに変換してください。
-          </p>
-          <Button variant="outline" onClick={downloadTemplate} className="flex items-center gap-2">
-            <Download className="w-4 h-4" />
-            CSVテンプレートをダウンロード
-          </Button>
-        </div>
+        {error && (
+          <>
+            <div className="mt-8 pt-8 border-t border-neutral-200">
+              <h2 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                AIツールを使ってPDFをCSVに変換する方法
+              </h2>
+              <p className="text-text-secondary mb-6">
+                ChatGPTなどのAIツールを使えば、PDFを簡単にCSV形式に変換できます。
+              </p>
 
-        <div className="mt-8 p-6 bg-gradient-to-r from-primary-50 to-primary-100 rounded-[22px]">
-          <h3 className="font-bold text-text-primary mb-2">💡 ヒント</h3>
-          <ul className="text-sm text-text-secondary space-y-2">
-            <li>• 総務省の標準フォーマットのPDFに対応しています</li>
-            <li>• PDFの読み込みに失敗した場合は、CSVファイルをお試しください</li>
-            <li>• データはブラウザ内で処理され、サーバーには送信されません</li>
-          </ul>
-        </div>
+              <div className="bg-neutral-50 rounded-[16px] p-6 mb-6">
+                <h3 className="font-bold text-text-primary mb-4">📋 変換手順</h3>
+                <ol className="space-y-4 text-sm text-text-secondary">
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                    <div>
+                      <p className="font-medium text-text-primary">CSVテンプレートをダウンロード</p>
+                      <p className="mt-1">まず、下のボタンからCSVテンプレートをダウンロードします。</p>
+                    </div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                    <div>
+                      <p className="font-medium text-text-primary">ChatGPTにアップロード</p>
+                      <p className="mt-1">ChatGPT（有料版）やClaude、Geminiなどのファイルアップロード対応AIツールを開きます。</p>
+                    </div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                    <div>
+                      <p className="font-medium text-text-primary">変換を依頼</p>
+                      <p className="mt-1">政治資金収支報告書のPDFとCSVテンプレートをアップロードし、以下のように依頼してください：</p>
+                      <div className="mt-2 p-3 bg-white rounded-[12px] border border-neutral-200">
+                        <p className="text-xs font-mono">
+                          「このPDFの政治資金収支報告書を、添付したCSVテンプレートの形式に合わせて変換してください。」
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-xs font-bold">4</span>
+                    <div>
+                      <p className="font-medium text-text-primary">CSVをダウンロードしてアップロード</p>
+                      <p className="mt-1">変換されたCSVファイルをダウンロードし、このページにアップロードします。</p>
+                    </div>
+                  </li>
+                </ol>
+              </div>
+
+              <Button variant="outline" onClick={downloadTemplate} className="flex items-center gap-2">
+                <Download className="w-4 h-4" />
+                CSVテンプレートをダウンロード
+              </Button>
+            </div>
+
+            <div className="mt-8 p-6 bg-gradient-to-r from-primary-50 to-primary-100 rounded-[22px]">
+              <h3 className="font-bold text-text-primary mb-2">💡 ヒント</h3>
+              <ul className="text-sm text-text-secondary space-y-2">
+                <li>• ChatGPT Plus、Claude Pro、Gemini Advancedなど、ファイルアップロードに対応した有料プランが必要です</li>
+                <li>• 変換精度は100%ではないため、アップロード後に内容を確認することをおすすめします</li>
+                <li>• データはブラウザ内で処理され、このサイトのサーバーには送信されません</li>
+              </ul>
+            </div>
+          </>
+        )}
       </Card>
     </div>
   );
