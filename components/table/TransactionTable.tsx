@@ -23,9 +23,11 @@ export default function TransactionTable({ transactions }: TransactionTableProps
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = useState(1);
+  const [showAll, setShowAll] = useState(false);
   const incomeDropdownRef = useRef<HTMLDivElement>(null);
   const expenseDropdownRef = useRef<HTMLDivElement>(null);
   const itemsPerPage = 50;
+  const initialDisplayCount = 8;
 
   // Get unique categories by type
   const { incomeCategories, expenseCategories } = useMemo(() => {
@@ -160,12 +162,26 @@ export default function TransactionTable({ transactions }: TransactionTableProps
     sortDirection,
   ]);
 
+  // Determine if filters are active
+  const hasActiveFilters = searchQuery || incomeCategoryFilter.length > 0 || expenseCategoryFilter.length > 0;
+
+  // Display logic: show initial 8 items if no filters and not showing all, otherwise use pagination
+  const displayTransactions = useMemo(() => {
+    if (!hasActiveFilters && !showAll) {
+      // Show only first 8 items when no filters and not expanded
+      return filteredTransactions.slice(0, initialDisplayCount);
+    } else {
+      // Use pagination when filters are active or showing all
+      return filteredTransactions.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+      );
+    }
+  }, [filteredTransactions, hasActiveFilters, showAll, currentPage, itemsPerPage, initialDisplayCount]);
+
   // Pagination
   const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
-  const paginatedTransactions = filteredTransactions.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const shouldShowPagination = hasActiveFilters || showAll;
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -254,9 +270,9 @@ export default function TransactionTable({ transactions }: TransactionTableProps
       </div>
 
       {/* Filters */}
-      <div className="mb-6 flex flex-col md:flex-row gap-4">
+      <div className="mb-6 flex flex-col sm:flex-row gap-3 md:gap-4">
         {/* Search */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative min-w-0">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-secondary" />
           <input
             type="text"
@@ -266,15 +282,15 @@ export default function TransactionTable({ transactions }: TransactionTableProps
               setSearchQuery(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2 border-2 border-neutral-200 rounded-[24px] focus:border-primary-500 focus:outline-none"
+            className="w-full pl-10 pr-4 py-2.5 md:py-2 border-2 border-neutral-200 rounded-[24px] focus:border-primary-500 focus:outline-none"
           />
         </div>
 
         {/* Income Category Filter - Multi-select */}
-        <div ref={incomeDropdownRef} className="relative">
+        <div ref={incomeDropdownRef} className="relative w-full sm:w-auto">
           <button
             onClick={() => setIsIncomeDropdownOpen(!isIncomeDropdownOpen)}
-            className="w-[200px] px-4 py-2 border-2 border-neutral-200 rounded-[24px] focus:border-primary-500 focus:outline-none bg-white flex items-center gap-2"
+            className="w-full sm:w-[200px] px-4 py-2.5 md:py-2 border-2 border-neutral-200 rounded-[24px] focus:border-primary-500 focus:outline-none bg-white flex items-center gap-2"
           >
             <span className="flex-1 text-left truncate">
               {incomeCategoryFilter.length === 0
@@ -287,8 +303,8 @@ export default function TransactionTable({ transactions }: TransactionTableProps
           </button>
 
           {isIncomeDropdownOpen && (
-            <div className="absolute z-10 mt-2 w-full max-w-sm bg-white border-2 border-neutral-200 rounded-[16px] shadow-lg">
-              <div className="max-h-[400px] overflow-y-auto">
+            <div className="absolute z-10 mt-2 w-full sm:min-w-[280px] bg-white border-2 border-neutral-200 rounded-[16px] shadow-lg max-w-[calc(100vw-2rem)] left-0 sm:left-auto">
+              <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
                 {/* Clear All */}
                 <div className="px-4 py-3 border-b border-neutral-200">
                   <button
@@ -325,10 +341,10 @@ export default function TransactionTable({ transactions }: TransactionTableProps
         </div>
 
         {/* Expense Category Filter - Multi-select */}
-        <div ref={expenseDropdownRef} className="relative">
+        <div ref={expenseDropdownRef} className="relative w-full sm:w-auto">
           <button
             onClick={() => setIsExpenseDropdownOpen(!isExpenseDropdownOpen)}
-            className="w-[200px] px-4 py-2 border-2 border-neutral-200 rounded-[24px] focus:border-primary-500 focus:outline-none bg-white flex items-center gap-2"
+            className="w-full sm:w-[200px] px-4 py-2.5 md:py-2 border-2 border-neutral-200 rounded-[24px] focus:border-primary-500 focus:outline-none bg-white flex items-center gap-2"
           >
             <span className="flex-1 text-left truncate">
               {expenseCategoryFilter.length === 0
@@ -341,8 +357,8 @@ export default function TransactionTable({ transactions }: TransactionTableProps
           </button>
 
           {isExpenseDropdownOpen && (
-            <div className="absolute z-10 mt-2 w-full max-w-sm bg-white border-2 border-neutral-200 rounded-[16px] shadow-lg">
-              <div className="max-h-[400px] overflow-y-auto">
+            <div className="absolute z-10 mt-2 w-full sm:min-w-[280px] bg-white border-2 border-neutral-200 rounded-[16px] shadow-lg max-w-[calc(100vw-2rem)] left-0 sm:left-auto">
+              <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
                 {/* Clear All */}
                 <div className="px-4 py-3 border-b border-neutral-200">
                   <button
@@ -380,14 +396,15 @@ export default function TransactionTable({ transactions }: TransactionTableProps
       </div>
 
       {/* Pagination - Top */}
-      {totalPages > 1 && (
+      {shouldShowPagination && totalPages > 1 && (
         <div className="mb-4">
           <PaginationControls />
         </div>
       )}
 
-      {/* Table */}
-      <div className="overflow-x-auto">
+      {/* Table - with scroll indicator shadow */}
+      <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="min-w-[600px]">
         <table className="w-full">
           <thead className="border-b-2 border-neutral-200">
             <tr>
@@ -424,7 +441,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
             </tr>
           </thead>
           <tbody>
-            {paginatedTransactions.map((transaction) => (
+            {displayTransactions.map((transaction) => (
               <tr
                 key={transaction.id}
                 className="border-b border-neutral-100 hover:bg-neutral-50"
@@ -463,10 +480,23 @@ export default function TransactionTable({ transactions }: TransactionTableProps
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
+      {/* Show More Button - Only shown when not showing all and no active filters */}
+      {!hasActiveFilters && !showAll && filteredTransactions.length > initialDisplayCount && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setShowAll(true)}
+            className="px-6 py-2 border-2 border-neutral-200 rounded-[24px] hover:border-primary-500 hover:bg-primary-50 transition-colors text-text-primary font-medium"
+          >
+            もっと見る
+          </button>
+        </div>
+      )}
+
       {/* Pagination - Bottom */}
-      {totalPages > 1 && (
+      {shouldShowPagination && totalPages > 1 && (
         <div className="mt-6">
           <PaginationControls />
         </div>

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Upload, FileText, AlertCircle, Download, Scan } from 'lucide-react';
-import Link from 'next/link';
+import { Upload, FileText, AlertCircle, Download } from 'lucide-react';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
 import { parseCSV, generateCSVTemplate } from '@/lib/parsers/csvParser';
@@ -11,9 +10,10 @@ import { enrichReportWithCalculations } from '@/lib/calculations/aggregations';
 
 interface FileUploadProps {
   onReportLoaded: (report: ExpenseReport) => void;
+  onPdfError?: (file: File) => void;
 }
 
-export default function FileUpload({ onReportLoaded }: FileUploadProps) {
+export default function FileUpload({ onReportLoaded, onPdfError }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +94,11 @@ export default function FileUpload({ onReportLoaded }: FileUploadProps) {
       );
       setIsProcessing(false);
       setUploadProgress('');
+
+      // Notify parent if PDF parsing failed
+      if (file.name.toLowerCase().endsWith('.pdf') && onPdfError) {
+        onPdfError(file);
+      }
     }
   };
 
@@ -109,143 +114,59 @@ export default function FileUpload({ onReportLoaded }: FileUploadProps) {
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <Card>
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">
-            政治資金収支報告書 可視化ツール
-          </h1>
-          <p className="text-text-secondary text-base md:text-lg mb-4">
-            PDFまたはCSVファイルをアップロードして、政治資金の流れを可視化します
-          </p>
-          <Link href="/ocr">
-            <Button variant="outline" size="sm" className="inline-flex items-center gap-2">
-              <Scan className="w-4 h-4" />
-              PDF→CSV変換ツール（OCR）を使う
-            </Button>
-          </Link>
-        </div>
+    <Card>
+      <div className="text-center mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-text-primary mb-2 md:mb-4">
+          収支報告まるみえ君
+        </h1>
+        <p className="text-text-secondary text-sm md:text-base lg:text-lg">
+          政治家の収支報告書データを可視化します
+        </p>
+      </div>
 
-        <div
-          className={`
-            border-2 border-dashed rounded-[22px] p-12 text-center transition-all
-            ${isDragging ? 'border-primary-500 bg-primary-50' : 'border-neutral-200 bg-neutral-50'}
-            ${isProcessing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-primary-500'}
-          `}
-          onDragEnter={handleDragIn}
-          onDragLeave={handleDragOut}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          onClick={() => !isProcessing && document.getElementById('file-input')?.click()}
-        >
-          <input
-            id="file-input"
-            type="file"
-            accept=".pdf,.csv"
-            onChange={handleFileInput}
-            className="hidden"
-            disabled={isProcessing}
-          />
+      <div
+        className={`
+          border-2 border-dashed rounded-[16px] md:rounded-[22px] p-4 md:p-6 text-center transition-all
+          ${isDragging ? 'border-primary-500 bg-primary-50' : 'border-neutral-200 bg-neutral-50'}
+          ${isProcessing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-primary-500'}
+        `}
+        onDragEnter={handleDragIn}
+        onDragLeave={handleDragOut}
+        onDragOver={handleDrag}
+        onDrop={handleDrop}
+        onClick={() => !isProcessing && document.getElementById('file-input')?.click()}
+      >
+        <input
+          id="file-input"
+          type="file"
+          accept=".pdf,.csv"
+          onChange={handleFileInput}
+          className="hidden"
+          disabled={isProcessing}
+        />
 
-          {isProcessing ? (
-            <div className="space-y-4">
-              <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary-500 border-t-transparent mx-auto" />
-              <p className="text-lg font-medium text-text-primary">{uploadProgress}</p>
-            </div>
-          ) : (
-            <>
-              <Upload className="w-16 h-16 mx-auto mb-4 text-primary-500" />
-              <p className="text-xl font-medium text-text-primary mb-2">
-                ファイルをドラッグ＆ドロップ
-              </p>
-              <p className="text-text-secondary mb-6">または</p>
-              <Button variant="primary" size="lg">
-                ファイルを選択
-              </Button>
-              <p className="text-sm text-text-secondary mt-4">
-                PDF・CSV形式に対応（最大10MB）
-              </p>
-            </>
-          )}
-        </div>
-
-        {error && (
-          <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-[22px] flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="font-medium text-red-800">エラー</p>
-              <p className="text-sm text-red-700 mt-1 whitespace-pre-line">{error}</p>
-            </div>
+        {isProcessing ? (
+          <div className="space-y-2">
+            <div className="animate-spin rounded-full h-6 w-6 md:h-8 md:w-8 border-4 border-primary-500 border-t-transparent mx-auto" />
+            <p className="text-sm md:text-base font-medium text-text-primary">{uploadProgress}</p>
           </div>
-        )}
-
-        {error && (
+        ) : (
           <>
-            <div className="mt-8 pt-8 border-t border-neutral-200">
-              <h2 className="text-lg font-bold text-text-primary mb-4 flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                AIツールを使ってPDFをCSVに変換する方法
-              </h2>
-              <p className="text-text-secondary mb-6">
-                ChatGPTなどのAIツールを使えば、PDFを簡単にCSV形式に変換できます。
-              </p>
-
-              <div className="bg-neutral-50 rounded-[16px] p-6 mb-6">
-                <h3 className="font-bold text-text-primary mb-4">📋 変換手順</h3>
-                <ol className="space-y-4 text-sm text-text-secondary">
-                  <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                    <div>
-                      <p className="font-medium text-text-primary">CSVテンプレートをダウンロード</p>
-                      <p className="mt-1">まず、下のボタンからCSVテンプレートをダウンロードします。</p>
-                    </div>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
-                    <div>
-                      <p className="font-medium text-text-primary">ChatGPTにアップロード</p>
-                      <p className="mt-1">ChatGPT（有料版）やClaude、Geminiなどのファイルアップロード対応AIツールを開きます。</p>
-                    </div>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
-                    <div>
-                      <p className="font-medium text-text-primary">変換を依頼</p>
-                      <p className="mt-1">政治資金収支報告書のPDFとCSVテンプレートをアップロードし、以下のように依頼してください：</p>
-                      <div className="mt-2 p-3 bg-white rounded-[12px] border border-neutral-200">
-                        <p className="text-xs font-mono">
-                          「このPDFの政治資金収支報告書を、添付したCSVテンプレートの形式に合わせて変換してください。」
-                        </p>
-                      </div>
-                    </div>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center text-xs font-bold">4</span>
-                    <div>
-                      <p className="font-medium text-text-primary">CSVをダウンロードしてアップロード</p>
-                      <p className="mt-1">変換されたCSVファイルをダウンロードし、このページにアップロードします。</p>
-                    </div>
-                  </li>
-                </ol>
-              </div>
-
-              <Button variant="outline" onClick={downloadTemplate} className="flex items-center gap-2">
-                <Download className="w-4 h-4" />
-                CSVテンプレートをダウンロード
-              </Button>
-            </div>
-
-            <div className="mt-8 p-6 bg-gradient-to-r from-primary-50 to-primary-100 rounded-[22px]">
-              <h3 className="font-bold text-text-primary mb-2">💡 ヒント</h3>
-              <ul className="text-sm text-text-secondary space-y-2">
-                <li>• ChatGPT Plus、Claude Pro、Gemini Advancedなど、ファイルアップロードに対応した有料プランが必要です</li>
-                <li>• 変換精度は100%ではないため、アップロード後に内容を確認することをおすすめします</li>
-                <li>• データはブラウザ内で処理され、このサイトのサーバーには送信されません</li>
-              </ul>
-            </div>
+            <Upload className="w-6 h-6 md:w-8 md:h-8 mx-auto mb-2 text-primary-500" />
+            <p className="text-sm md:text-base font-medium text-text-primary mb-1">
+              ファイルをドラッグ＆ドロップ
+            </p>
+            <p className="text-text-secondary text-xs md:text-sm mb-2 md:mb-3">または</p>
+            <Button variant="primary" size="md">
+              ファイルを選択
+            </Button>
+            <p className="text-xs text-text-secondary mt-2">
+              PDF・CSV形式に対応（最大20MB）
+            </p>
           </>
         )}
-      </Card>
-    </div>
+      </div>
+
+    </Card>
   );
 }

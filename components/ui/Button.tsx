@@ -13,7 +13,7 @@ export default function Button({
   className = '',
   ...props
 }: ButtonProps) {
-  const baseStyles = 'rounded-[24px] font-medium transition-colors';
+  const baseStyles = 'rounded-[24px] font-medium transition-colors min-h-[44px]';
 
   const variants = {
     primary: 'bg-primary-500 text-white hover:bg-primary-600 border-2 border-primary-500',
@@ -22,8 +22,8 @@ export default function Button({
   };
 
   const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
+    sm: 'px-4 py-2 text-sm',
+    md: 'px-5 py-2.5 text-base',
     lg: 'px-6 py-3 text-lg',
   };
 

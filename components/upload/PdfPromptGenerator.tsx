@@ -1,407 +1,412 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import * as pdfjsLib from 'pdfjs-dist';
-import { createWorker } from 'tesseract.js';
+import React, { useState, useEffect } from 'react';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
+import { FileText, Download, AlertCircle, CheckCircle2, Loader2, Copy, Check } from 'lucide-react';
+import { generateCSVTemplate } from '@/lib/parsers/csvParser';
 
-// PDF.js worker設定
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+// File size limits (Google Cloud Vision supports up to 20MB)
+const MAX_FILE_SIZE_MB = 20;
+const MAX_PAGES = 150;
+const WARN_FILE_SIZE_MB = 10;
+const WARN_PAGES = 50;
 
-// AIへのメインプロンプト
-const MAIN_PROMPT = `# PDFから政治資金収支報告書CSVを生成してください
+// Simplified prompt for CustomGPT (only includes OCR text)
+const MAIN_PROMPT = `以下は政治資金収支報告書のPDFから抽出したOCRテキストです：
 
-## 概要
-以下のテキストは、スキャンされた政治資金収支報告書PDFからOCRで抽出したデータです。
-このデータを分析して、下記のCSVテンプレート形式に変換してください。
-
-## 指示
-
-### 1. ページごとの内容を理解する
-- 各ページの内容を確認し、以下のような情報がどのページに記載されているか把握してください：
-  - 表紙・基本情報（政治家名、団体名、会計年度）
-  - 収支総括表（収入合計、支出合計、繰越金など）
-  - 収入の内訳明細
-  - 支出の内訳明細
-  - 個別の取引記録（日付、金額、支出先など）
-
-### 2. ページをまたいだデータ統合
-- **重要：** 複数ページにまたがる表やリストは、ページ番号に関係なく1つのデータとして統合してください
-- 同じ項目が複数ページに続いている場合は、すべてのページから情報を収集してください
-- ページの途中で切れている表は、次のページと結合して完全な行にしてください
-- 重複データを避けてください（同じ取引が複数回出現しないように）
-
-### 3. データ抽出のルール
-- OCRで抽出されたテキストから、取引データ（日付、カテゴリー、項目、金額、タイプ、支出先/寄附者、住所、備考）を読み取ってください
-- 可能な限り、政治家名、政治団体名、会計年度などのメタデータも抽出してください
-- 金額は数値のみ（カンマなし）で出力してください
-- 日付は YYYY/MM/DD 形式で出力してください
-- タイプは「収入」または「支出」のいずれかを指定してください
-
-### 4. 不完全なデータの処理
-- OCRエラーで読み取れない文字がある場合は、文脈から推測するか空欄にしてください
-- ページの端で切れている行は、前後のページと照合して復元してください
-- 金額の単位に注意してください（「円」を削除し、数値のみにする）
-
-### 5. 出力形式
-- 以下のCSVテンプレート形式に従って、CSVファイルの内容を生成してください
-- すべてのページから抽出した取引を、1つの統合されたCSVファイルにまとめてください
-
-## CSVテンプレート形式
-
-\`\`\`csv
-# 政治資金収支報告書CSVテンプレート v1.0
-# メタデータ（オプション）- 以下の行は # で始めてください
-#POLITICIAN=政治家名
-#ORGANIZATION=政治団体名
-#FISCAL_YEAR=2023
-#INCOME_TOTAL=10000000
-#EXPENSE_TOTAL=8000000
-#CARRIED_FROM_PREV=5000000
-#CARRIED_TO_NEXT=7000000
-
-# データ行（必須）
-日付,カテゴリー,項目,金額,タイプ,支出先/寄附者,住所,備考
-2023/04/01,個人からの寄附,桐ヶ谷正裕,100000,収入,,,会社役員
-2023/05/27,事務所費,事務所賃料,891010,支出,宇野卓哉,神奈川県横浜市,
-2023/06/15,備品・消耗品費,ガソリン代,68395,支出,豊島興油株式会社,東京都千代田区,
-\`\`\`
-
-## カテゴリーの参考情報
-
-### 収入カテゴリー
-- 個人からの寄附
-- 法人その他の団体からの寄附
-- 政治団体からの寄附
-- 機関紙誌の発行による収入
-- 借入金
-- その他の収入
-
-### 支出カテゴリー
-- 経常経費
-- 人件費
-- 光熱水費
-- 備品・消耗品費
-- 事務所費
-- 政治活動費
-- 組織活動費
-- 選挙関係費
-- 機関紙誌の発行
-- 調査研究費
-- 寄附・交付金
-- その他の経費
-
----
-
-# OCRで抽出されたPDFテキスト
-
-`;
-
-// ページごとのテンプレート
-const PAGE_TEMPLATE = `
 ================================================================================
-ページ {{PAGE_NUMBER}}
+OCR抽出テキスト
 ================================================================================
 
-{{PAGE_CONTENT}}
-
 `;
 
-// フッター（最後に追加する指示）
-const FOOTER_PROMPT = `
+// No page template needed - just include raw OCR text
+// No footer needed - CustomGPT has all instructions built in
 
----
-
-# 出力形式と最終確認
-
-## 出力するCSVの構造
-1. **メタデータセクション**（#で始まる行）
-   - #POLITICIAN=（政治家名）
-   - #ORGANIZATION=（政治団体名）
-   - #FISCAL_YEAR=（会計年度）
-   - #INCOME_TOTAL=（収入合計）
-   - #EXPENSE_TOTAL=（支出合計）
-   - #CARRIED_FROM_PREV=（前年繰越額）
-   - #CARRIED_TO_NEXT=（翌年繰越額）
-
-2. **ヘッダー行**
-   - 日付,カテゴリー,項目,金額,タイプ,支出先/寄附者,住所,備考
-
-3. **データ行**
-   - 全ページから抽出した取引を統合して出力
-   - 日付順に並べる（古い順推奨）
-   - 収入と支出を混在させて問題ありません（タイプ列で区別）
-
-## 最終確認事項
-- [ ] すべてのページを確認し、取引データを漏れなく抽出しましたか？
-- [ ] ページをまたぐ表を正しく統合しましたか？
-- [ ] 重複データを削除しましたか？
-- [ ] 金額からカンマや「円」を削除しましたか？
-- [ ] 日付を YYYY/MM/DD 形式にしましたか？
-- [ ] メタデータ（合計金額など）をページから抽出しましたか？
-
-## 出力してください
-上記を確認した上で、完全なCSVファイルの内容を生成してください。
-\`\`\`csv で囲んで出力すると、コピーしやすくなります。
-`;
-
-interface PageText {
-  page: number;
-  text: string;
+interface PdfPromptGeneratorProps {
+  autoStartFile?: File | null;
 }
 
-export function PdfPromptGenerator() {
+export function PdfPromptGenerator({ autoStartFile }: PdfPromptGeneratorProps = {}) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState('');
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [resultPrompt, setResultPrompt] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState('');
+  const [warning, setWarning] = useState('');
+  const [copied, setCopied] = useState(false);
 
-  // ファイル選択ハンドラー
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type === 'application/pdf') {
-      setSelectedFile(file);
-      setResultPrompt(''); // 新しいファイル選択時は結果をクリア
-    } else {
-      alert('PDFファイルを選択してください。');
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+  // Auto-hide error after 8 seconds
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError('');
+      }, 8000);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [error]);
 
-  // PDFを画像化してOCR処理を実行
-  const handleProcess = async () => {
-    if (!selectedFile) {
-      alert('PDFファイルを選択してください。');
+  // Auto-start processing when autoStartFile is provided
+  useEffect(() => {
+    if (autoStartFile && !isProcessing) {
+      const startAutoProcess = async () => {
+        // Reset all state for new file
+        setError('');
+        setWarning('');
+        setResultPrompt('');
+        setProgress('');
+        setProcessingProgress(0);
+        setCurrentPage(0);
+        setTotalPages(0);
+
+        // Validate file
+        if (autoStartFile.type !== 'application/pdf') {
+          setError('PDFファイルのみ対応しています。');
+          return;
+        }
+
+        const fileSizeMB = autoStartFile.size / (1024 * 1024);
+        if (fileSizeMB > MAX_FILE_SIZE_MB) {
+          setError(`ファイルサイズが大きすぎます（${fileSizeMB.toFixed(1)}MB）。${MAX_FILE_SIZE_MB}MB以下のファイルを選択してください。`);
+          return;
+        }
+
+        if (fileSizeMB > WARN_FILE_SIZE_MB) {
+          setWarning(`ファイルサイズが${fileSizeMB.toFixed(1)}MBです。処理に時間がかかる場合があります。`);
+        }
+
+        setSelectedFile(autoStartFile);
+        await handleProcess(autoStartFile);
+      };
+
+      startAutoProcess();
+    }
+  }, [autoStartFile]);
+
+  // OCR.space APIを使用してPDFを処理
+  const handleProcess = async (file?: File) => {
+    const targetFile = file || selectedFile;
+
+    if (!targetFile) {
+      setError('PDFファイルを選択してください。');
       return;
     }
 
     setIsProcessing(true);
-    setProgress('処理を開始しています...');
+    setProgress('文字認識を開始しています...');
+    setProcessingProgress(0);
     setResultPrompt('');
+    setError('');
+
+    let progressInterval: NodeJS.Timeout | null = null;
+    let timeoutId: NodeJS.Timeout | null = null;
 
     try {
-      // PDFファイルを読み込み
-      const fileBuffer = await selectedFile.arrayBuffer();
-      setProgress('PDFを読み込んでいます...');
+      setProgress('PDFから文字を読み取っています...');
+      setProcessingProgress(10);
 
-      const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
-      const totalPages = pdf.numPages;
-      setProgress(`PDFを読み込みました（全${totalPages}ページ）`);
-
-      // Tesseract.js workerを初期化
-      setProgress('OCRエンジンを初期化しています...');
-      const worker = await createWorker('jpn', 1, {
-        logger: (m) => {
-          if (m.status === 'recognizing text') {
-            console.log(`OCR進捗: ${Math.round(m.progress * 100)}%`);
+      // Start simulated progress while OCR is processing
+      progressInterval = setInterval(() => {
+        setProcessingProgress((prev) => {
+          // Gradually increase to 85% while waiting for OCR
+          // Speed slows down as it approaches the limit
+          if (prev < 50) {
+            return prev + 1; // Fast progress initially
+          } else if (prev < 70) {
+            return prev + 0.5; // Slower progress
+          } else if (prev < 85) {
+            return prev + 0.2; // Very slow progress
           }
-        },
+          return prev;
+        });
+      }, 300); // Update every 300ms
+
+      // Set timeout for OCR processing (5 minutes)
+      const TIMEOUT_MS = 5 * 60 * 1000;
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error('OCR処理がタイムアウトしました。PDFが大きすぎる可能性があります。ページ数を減らして再度お試しください。'));
+        }, TIMEOUT_MS);
       });
 
-      const pageTexts: PageText[] = [];
+      // Call our API route
+      const formData = new FormData();
+      formData.append('file', targetFile);
 
-      // 全ページを処理
-      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-        setProgress(`ページ ${pageNum}/${totalPages} を処理中...`);
+      const fetchPromise = fetch('/api/ocr', {
+        method: 'POST',
+        body: formData,
+      });
 
-        // PDFページを取得
-        const page = await pdf.getPage(pageNum);
+      // Race between API call and timeout
+      const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
 
-        // ビューポートを設定（OCR精度向上のため scale を 2.0 に設定）
-        const viewport = page.getViewport({ scale: 2.0 });
+      // Stop simulated progress and clear timeout
+      if (progressInterval) clearInterval(progressInterval);
+      if (timeoutId) clearTimeout(timeoutId);
+      setProcessingProgress(70);
 
-        // Canvasに描画
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        if (!context) {
-          throw new Error('Canvas context could not be created');
-        }
+      console.log('OCR API response status:', response.status);
 
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-
-        await page.render({
-          canvasContext: context,
-          viewport: viewport,
-          canvas: canvas,
-        }).promise;
-
-        // CanvasからデータURLを取得
-        const imageData = canvas.toDataURL('image/png');
-
-        // OCR処理
-        setProgress(`ページ ${pageNum}/${totalPages} のOCR処理中...`);
-        const { data } = await worker.recognize(imageData);
-
-        // 結果を保存
-        pageTexts.push({
-          page: pageNum,
-          text: data.text.trim(),
-        });
-
-        console.log(`ページ ${pageNum} の処理完了`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('OCR API error response:', errorData);
+        throw new Error(errorData.error || '文字認識に失敗しました');
       }
 
-      // Workerを終了
-      await worker.terminate();
+      const data = await response.json();
+      console.log('OCR API success response:', {
+        success: data.success,
+        textLength: data.text?.length,
+        pageCount: data.pageCount
+      });
+
+      if (!data.success) {
+        throw new Error(data.error || '文字認識に失敗しました');
+      }
+
+      setProgress('テキストを抽出しています...');
+      setProcessingProgress(80);
+
+      const extractedText = data.text || '';
+      const pageCount = data.pageCount || 1;
+
+      setTotalPages(pageCount);
 
       // プロンプトを生成
       setProgress('プロンプトを生成しています...');
-      const pagesContent = pageTexts
-        .map((pt) =>
-          PAGE_TEMPLATE
-            .replace('{{PAGE_NUMBER}}', pt.page.toString())
-            .replace('{{PAGE_CONTENT}}', pt.text)
-        )
-        .join('\n');
+      setProcessingProgress(90);
 
-      const finalPrompt = MAIN_PROMPT + pagesContent + FOOTER_PROMPT;
+      // Simple prompt: just header + OCR text for CustomGPT
+      const finalPrompt = MAIN_PROMPT + extractedText;
+      console.log('Generated prompt length:', finalPrompt.length);
       setResultPrompt(finalPrompt);
 
+      setProcessingProgress(100);
       setProgress('処理が完了しました！');
+      console.log('Processing complete, resultPrompt set');
     } catch (error) {
       console.error('処理中にエラーが発生しました:', error);
-      setProgress('エラーが発生しました。コンソールを確認してください。');
-      alert(`エラー: ${error instanceof Error ? error.message : '不明なエラー'}`);
+      // Clear interval and timeout in case of error
+      if (progressInterval) clearInterval(progressInterval);
+      if (timeoutId) clearTimeout(timeoutId);
+      setError(`エラーが発生しました: ${error instanceof Error ? error.message : '不明なエラー'}`);
+      setProgress('');
+      setProcessingProgress(0);
     } finally {
       setIsProcessing(false);
+      setCurrentPage(0);
     }
   };
 
-  // Markdownファイルとしてダウンロード
-  const handleDownload = () => {
-    if (!resultPrompt) {
-      alert('ダウンロードする内容がありません。');
-      return;
-    }
-
+  // CSVテンプレートをダウンロード
+  const handleDownloadTemplate = () => {
     try {
-      // Blobを作成
-      const blob = new Blob([resultPrompt], {
-        type: 'text/markdown;charset=utf-8',
-      });
-
-      // ダウンロード用のURLを生成
+      const template = generateCSVTemplate();
+      const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
-
-      // 一時的なaタグを作成してクリック
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'prompt.md';
+      link.download = '政治資金報告書テンプレート.csv';
       document.body.appendChild(link);
       link.click();
-
-      // クリーンアップ
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error('ダウンロード中にエラーが発生しました:', error);
-      alert('ダウンロードに失敗しました。');
+      setError('CSVテンプレートのダウンロードに失敗しました。');
     }
   };
 
-  return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold mb-2">政治資金報告書 PDF→CSV 変換ツール</h2>
-          <p className="text-gray-600 mb-2">
-            PDFファイルからテキストを抽出し、AIがCSVファイルを生成するためのプロンプトを作成します。
-          </p>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
-            <p className="font-semibold text-blue-900 mb-2">使い方：</p>
-            <ol className="text-blue-800 space-y-1 list-decimal list-inside">
-              <li>政治資金収支報告書のPDFをアップロード</li>
-              <li>OCR処理を実行して、Markdownファイルをダウンロード</li>
-              <li>ダウンロードしたMarkdownをChatGPT/Claude/Geminiに投げる</li>
-              <li>AIが生成したCSVファイルを保存して、メインページにアップロード</li>
-            </ol>
-          </div>
-        </div>
+  // プロンプトをクリップボードにコピー
+  const handleCopyPrompt = async () => {
+    if (!resultPrompt) {
+      setError('コピーする内容がありません。');
+      return;
+    }
 
-        {/* ファイル入力 */}
+    try {
+      await navigator.clipboard.writeText(resultPrompt);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    } catch (error) {
+      console.error('コピー中にエラーが発生しました:', error);
+      setError('クリップボードへのコピーに失敗しました。');
+    }
+  };
+
+  const fileSizeMB = selectedFile ? (selectedFile.size / (1024 * 1024)).toFixed(1) : '0';
+
+  return (
+    <Card>
+      <div className="space-y-4 md:space-y-6">
+        {/* Header */}
         <div>
-          <label className="block mb-2 font-medium">PDFファイルを選択</label>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf"
-            onChange={handleFileSelect}
-            disabled={isProcessing}
-            className="block w-full text-sm text-gray-500
-              file:mr-4 file:py-2 file:px-4
-              file:rounded-md file:border-0
-              file:text-sm file:font-semibold
-              file:bg-blue-50 file:text-blue-700
-              hover:file:bg-blue-100
-              disabled:opacity-50 disabled:cursor-not-allowed"
-          />
-          {selectedFile && (
-            <p className="mt-2 text-sm text-gray-600">
-              選択されたファイル: {selectedFile.name}
-            </p>
+          <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-text-primary mb-1 md:mb-2">
+            読み込み可能な形式に変更！
+          </h2>
+          <p className="text-text-secondary text-sm md:text-base mb-3 md:mb-4">
+            PDFからテキストを抽出し、AIを使ってCSVファイルを作成する手順をご案内します
+          </p>
+
+          {/* Instructions */}
+          {!resultPrompt && (
+            <div className="bg-gradient-to-r from-primary-50 to-primary-100 rounded-[16px] md:rounded-[22px] p-4 md:p-6">
+              <h3 className="font-bold text-text-primary text-sm md:text-base mb-2 md:mb-3 flex items-center gap-2">
+                <FileText className="w-4 h-4 md:w-5 md:h-5" />
+                使い方
+              </h3>
+              <ol className="text-xs md:text-sm text-text-primary space-y-1.5 md:space-y-2 list-decimal list-inside">
+                <li>PDFから文字を自動で読み取ります（数秒〜数分）</li>
+                <li>処理完了後、OCRテキストをコピー</li>
+                <li>CustomGPTにテキストを貼り付けてCSV変換</li>
+                <li>生成されたCSVファイルを保存して、メインページにアップロード</li>
+              </ol>
+            </div>
           )}
         </div>
 
-        {/* 処理ボタン */}
-        <div className="flex gap-4">
-          <Button
-            onClick={handleProcess}
-            disabled={!selectedFile || isProcessing}
-            className="flex-1"
-          >
-            {isProcessing ? '処理中...' : 'OCR処理を実行'}
-          </Button>
-        </div>
+        {/* Warnings */}
+        {warning && !error && !resultPrompt && (
+          <div className="p-3 md:p-4 bg-yellow-50 border-2 border-yellow-200 rounded-[16px] md:rounded-[22px] flex items-start gap-2 md:gap-3">
+            <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs md:text-sm text-yellow-800">{warning}</p>
+          </div>
+        )}
 
-        {/* 進捗表示 */}
+        {/* File Info */}
+        {selectedFile && (
+          <div className="p-3 md:p-4 bg-neutral-50 rounded-[12px] md:rounded-[16px] flex items-center gap-2 md:gap-3">
+            <FileText className="w-4 h-4 md:w-5 md:h-5 text-primary-500 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs md:text-sm font-medium text-text-primary truncate">
+                {selectedFile.name}
+              </p>
+              <p className="text-xs text-text-secondary">
+                {fileSizeMB}MB
+                {totalPages > 0 && ` • ${totalPages}ページ`}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Progress */}
         {progress && (
-          <div className="p-4 bg-blue-50 rounded-md">
-            <p className="text-sm text-blue-800">{progress}</p>
+          <div className="p-3 md:p-4 bg-primary-50 rounded-[16px] md:rounded-[22px]">
+            <div className="flex items-center gap-2 md:gap-3 mb-1.5 md:mb-2">
+              {isProcessing ? (
+                <Loader2 className="w-4 h-4 md:w-5 md:h-5 text-primary-600 animate-spin flex-shrink-0" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4 md:w-5 md:h-5 text-primary-600 flex-shrink-0" />
+              )}
+              <p className="text-xs md:text-sm text-primary-900">{progress}</p>
+            </div>
             {isProcessing && (
-              <div className="mt-2">
-                <div className="w-full bg-blue-200 rounded-full h-2 overflow-hidden">
-                  <div className="bg-blue-600 h-full animate-pulse" style={{ width: '100%' }} />
+              <div className="space-y-1.5 md:space-y-2">
+                <div className="flex justify-between text-xs text-primary-700">
+                  <span>
+                    {currentPage > 0 && `ページ ${currentPage}/${totalPages}`}
+                  </span>
+                  <span>{Math.round(processingProgress)}%</span>
+                </div>
+                <div className="w-full bg-primary-200 rounded-full h-1.5 md:h-2 overflow-hidden">
+                  <div
+                    className="bg-primary-600 h-full transition-all duration-300"
+                    style={{ width: `${processingProgress}%` }}
+                  />
                 </div>
               </div>
             )}
           </div>
         )}
 
-        {/* 結果表示 */}
+        {/* Result */}
         {resultPrompt && (
           <>
             <div>
-              <label className="block mb-2 font-medium">生成されたプロンプト（プレビュー）</label>
+              <label className="block mb-1.5 md:mb-2 font-medium text-text-primary text-sm md:text-base">
+                PDFから抽出されたテキスト
+              </label>
               <textarea
                 value={resultPrompt}
                 readOnly
-                className="w-full h-96 p-4 border border-gray-300 rounded-md font-mono text-sm resize-y focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full h-64 md:h-96 p-3 md:p-4 border-2 border-neutral-200 rounded-[12px] md:rounded-[16px] font-mono text-xs md:text-sm resize-y focus:outline-none focus:border-primary-500 bg-neutral-50"
               />
-              <p className="text-sm text-gray-500 mt-2">
-                このプロンプトには、OCRで抽出したテキストとCSV変換の指示が含まれています。
+              <p className="text-xs md:text-sm text-text-secondary mt-1.5 md:mt-2">
+                このテキストをCustomGPTに貼り付けると、自動的にCSVファイルが生成されます
               </p>
             </div>
 
-            {/* ダウンロードボタン */}
-            <div className="space-y-2">
-              <Button
-                onClick={handleDownload}
-                className="w-full"
-                variant="primary"
-              >
-                📥 AIに投げる用のプロンプトをダウンロード（.md）
-              </Button>
-              <p className="text-sm text-gray-600 text-center">
-                このファイルをChatGPT、Claude、またはGeminiにアップロードすると、CSV形式のデータが生成されます
-              </p>
+            {/* Action Buttons */}
+            <div className="space-y-3 md:space-y-4">
+              <div className="grid grid-cols-2 gap-2 md:gap-3">
+                <Button
+                  onClick={handleCopyPrompt}
+                  variant={copied ? 'primary' : 'primary'}
+                  className="w-full flex items-center justify-center gap-2"
+                >
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  <span className="text-sm md:text-base">
+                    {copied ? 'コピーしました！' : 'テキストをコピー'}
+                  </span>
+                </Button>
+                <Button
+                  onClick={() => window.open('https://chatgpt.com/g/g-690bb7351a348191b27654ae6c668720-shou-zhi-bao-gao-marumiejun-gpt', '_blank')}
+                  variant="outline"
+                  className="w-full flex items-center justify-center gap-2"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span className="text-sm md:text-base">ChatGPTを開く</span>
+                </Button>
+              </div>
+
+              {/* Instructions */}
+              <div className="p-3 md:p-4 bg-gradient-to-r from-primary-50 to-primary-100 rounded-[12px] md:rounded-[16px] space-y-2 md:space-y-3">
+                <div className="flex items-start gap-2">
+                  <div className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 rounded-full bg-primary-500 text-white flex items-center justify-center text-xs md:text-sm font-bold mt-0.5">
+                    1
+                  </div>
+                  <div>
+                    <p className="text-xs md:text-sm font-medium text-text-primary">テキストをコピー</p>
+                    <p className="text-xs text-text-secondary mt-0.5 md:mt-1">上のボタンでテキストをクリップボードにコピーしてください</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 rounded-full bg-primary-500 text-white flex items-center justify-center text-xs md:text-sm font-bold mt-0.5">
+                    2
+                  </div>
+                  <div>
+                    <p className="text-xs md:text-sm font-medium text-text-primary">CustomGPTに貼り付け</p>
+                    <p className="text-xs text-text-secondary mt-0.5 md:mt-1">政治資金報告書CSVコンバーターCustomGPTを開き、テキストを貼り付けてください</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 rounded-full bg-primary-500 text-white flex items-center justify-center text-xs md:text-sm font-bold mt-0.5">
+                    3
+                  </div>
+                  <div>
+                    <p className="text-xs md:text-sm font-medium text-text-primary">生成されたCSVをダウンロード</p>
+                    <p className="text-xs text-text-secondary mt-0.5 md:mt-1">CustomGPTが自動的にCSVファイルを生成します。保存してください</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 rounded-full bg-primary-500 text-white flex items-center justify-center text-xs md:text-sm font-bold mt-0.5">
+                    4
+                  </div>
+                  <div>
+                    <p className="text-xs md:text-sm font-medium text-text-primary">このページに戻ってアップロード</p>
+                    <p className="text-xs text-text-secondary mt-0.5 md:mt-1">生成されたCSVファイルを上部のファイルアップロードエリアにアップロードして可視化します</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </>
         )}
+
       </div>
     </Card>
   );

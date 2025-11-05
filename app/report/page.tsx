@@ -22,13 +22,22 @@ function ReportContent() {
   const [shareSuccess, setShareSuccess] = useState(false);
 
   useEffect(() => {
-    const dataParam = searchParams.get('data');
-    if (!dataParam) {
-      setError('レポートデータが見つかりません');
-      return;
-    }
-
     try {
+      // First, check sessionStorage for report data (used for large files to avoid HTTP 431)
+      const sessionData = sessionStorage.getItem('currentReport');
+      if (sessionData) {
+        const report = JSON.parse(sessionData) as ExpenseReport;
+        setReport(report);
+        return;
+      }
+
+      // Fallback: check URL parameter (used for sharing smaller reports)
+      const dataParam = searchParams.get('data');
+      if (!dataParam) {
+        setError('レポートデータが見つかりません');
+        return;
+      }
+
       const decoded = decodeReportFromURL(dataParam);
       if (!decoded) {
         setError('レポートデータの読み込みに失敗しました');
@@ -36,7 +45,7 @@ function ReportContent() {
       }
       setReport(decoded);
     } catch (err) {
-      console.error('Decode error:', err);
+      console.error('Report loading error:', err);
       setError('レポートデータの解析に失敗しました');
     }
   }, [searchParams]);
@@ -46,12 +55,22 @@ function ReportContent() {
 
     try {
       const shareUrl = generateShareURL(report, window.location.origin);
+
+      // Warn if URL is too long (might cause issues when sharing)
+      if (shareUrl.length > 8000) {
+        const confirmed = confirm(
+          'このレポートは大きすぎるため、URLでの共有が一部のブラウザで動作しない可能性があります。\n' +
+          'それでも続けますか？'
+        );
+        if (!confirmed) return;
+      }
+
       await copyToClipboard(shareUrl);
       setShareSuccess(true);
       setTimeout(() => setShareSuccess(false), 3000);
     } catch (err) {
       console.error('Share error:', err);
-      alert('URLのコピーに失敗しました');
+      alert('URLのコピーに失敗しました。レポートデータが大きすぎる可能性があります。');
     }
   };
 
@@ -85,25 +104,15 @@ function ReportContent() {
       <div className="sticky top-0 z-50 bg-white border-b-2 border-neutral-200 shadow-sm">
         <div className="max-w-[1032px] mx-auto px-4 md:px-8 py-4">
           <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide">
-            {/* Back Button + Politician Info */}
-            <div className="flex items-center gap-4 flex-shrink-0">
-              <Button
-                variant="outline"
-                onClick={() => router.push('/')}
-                className="flex items-center gap-2 whitespace-nowrap"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                戻る
-              </Button>
-              <div>
-                <h1 className="text-lg md:text-xl font-bold text-text-primary whitespace-nowrap">
-                  {report.politician.name}
-                </h1>
-                <p className="text-xs text-text-secondary whitespace-nowrap">
-                  {report.politician.fiscalYear}年度
-                </p>
-              </div>
-            </div>
+            {/* Back Button */}
+            <Button
+              variant="outline"
+              onClick={() => router.push('/')}
+              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              戻る
+            </Button>
 
             {/* Section Navigation */}
             <div className="flex-1 min-w-0">
@@ -126,6 +135,16 @@ function ReportContent() {
       {/* Content Sections */}
       <div className="px-4 md:px-8 py-8">
         <div className="max-w-[1032px] mx-auto space-y-8">
+          {/* Organization and Politician Info Header */}
+          <div className="text-center">
+            <h2 className="text-2xl md:text-3xl font-bold text-text-primary mb-2">
+              {report.politician.organization}
+            </h2>
+            <p className="text-lg md:text-xl text-text-secondary">
+              {report.politician.name} ({report.politician.fiscalYear}年度)
+            </p>
+          </div>
+
           {/* Summary Cards */}
           <SummaryCards summary={report.summary} />
 
