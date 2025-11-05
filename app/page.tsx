@@ -15,6 +15,7 @@ const PdfPromptGenerator = dynamic(
 
 export default function Home() {
   const router = useRouter();
+  const [showOCRTool, setShowOCRTool] = useState(false);
   const [failedPdfFile, setFailedPdfFile] = useState<File | null>(null);
 
   const handleReportLoaded = (report: ExpenseReport) => {
@@ -39,15 +40,16 @@ export default function Home() {
   };
 
   const handlePdfError = (file: File) => {
-    // Pass the file to OCR tool
+    // Show OCR tool when PDF upload fails and pass the file
     setFailedPdfFile(file);
+    setShowOCRTool(true);
   };
 
   return (
     <div className="min-h-screen bg-neutral-50 py-6 px-4 md:py-12 md:px-8">
       <div className="max-w-[1032px] mx-auto space-y-6 md:space-y-12">
         <FileUpload onReportLoaded={handleReportLoaded} onPdfError={handlePdfError} />
-        <PdfPromptGenerator autoStartFile={failedPdfFile} />
+        {showOCRTool && <PdfPromptGenerator autoStartFile={failedPdfFile} />}
       </div>
     </div>
   );
