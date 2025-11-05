@@ -191,7 +191,6 @@ async function processPDFAsync(file: File, buffer: Buffer, visionClient: ImageAn
     const [result] = await operation.promise();
 
     console.log('OCR complete!');
-    console.log(`Operation result metadata: ${JSON.stringify(result?.metadata || {}, null, 2)}`);
     console.log('Reading results from GCS...');
 
     // Read output files from GCS
