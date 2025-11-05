@@ -310,6 +310,14 @@ export function PdfPromptGenerator({ autoStartFile }: PdfPromptGeneratorProps = 
           )}
         </div>
 
+        {/* Errors */}
+        {error && (
+          <div className="p-3 md:p-4 bg-red-50 border-2 border-red-200 rounded-[16px] md:rounded-[22px] flex items-start gap-2 md:gap-3">
+            <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs md:text-sm text-red-800">{error}</p>
+          </div>
+        )}
+
         {/* Warnings */}
         {warning && !error && !resultPrompt && (
           <div className="p-3 md:p-4 bg-yellow-50 border-2 border-yellow-200 rounded-[16px] md:rounded-[22px] flex items-start gap-2 md:gap-3">
@@ -317,6 +325,15 @@ export function PdfPromptGenerator({ autoStartFile }: PdfPromptGeneratorProps = 
             <p className="text-xs md:text-sm text-yellow-800">{warning}</p>
           </div>
         )}
+
+        {/* Debug Info - Remove after testing */}
+        <div className="p-3 bg-gray-100 rounded text-xs">
+          <p>Debug: autoStartFile = {autoStartFile ? autoStartFile.name : 'null'}</p>
+          <p>Debug: selectedFile = {selectedFile ? selectedFile.name : 'null'}</p>
+          <p>Debug: isProcessing = {isProcessing ? 'true' : 'false'}</p>
+          <p>Debug: progress = {progress || 'empty'}</p>
+          <p>Debug: error = {error || 'none'}</p>
+        </div>
 
         {/* File Info */}
         {selectedFile && (
