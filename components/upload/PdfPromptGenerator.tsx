@@ -6,7 +6,9 @@ import Card from '../ui/Card';
 import { FileText, Download, AlertCircle, CheckCircle2, Loader2, Copy, Check } from 'lucide-react';
 import { generateCSVTemplate } from '@/lib/parsers/csvParser';
 
-// File size limits (Google Cloud Vision supports up to 20MB)
+// File size limits (20MB recommended for reasonable processing time)
+// Google Cloud Vision API: 20MB hard limit
+// Tesseract.js: No limit, but larger files take much longer to process
 const MAX_FILE_SIZE_MB = 20;
 const MAX_PAGES = 150;
 const WARN_FILE_SIZE_MB = 10;

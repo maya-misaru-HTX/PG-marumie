@@ -7,11 +7,14 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // 5 minutes for large PDF processing
 
-// Google Cloud Vision API
+// Google Cloud Vision API (Recommended)
 // Supports files up to 20MB with excellent Japanese OCR
 // First 1,000 pages per month are free
 // Credentials should be set via GOOGLE_APPLICATION_CREDENTIALS env variable
 // or inline credentials via GOOGLE_CREDENTIALS env variable
+//
+// Fallback option (if Google Cloud credentials not configured):
+// - OCR.space Free API (1MB file size limit, 25,000 requests/month)
 
 export async function POST(request: NextRequest) {
   try {
@@ -116,10 +119,20 @@ async function processPDFAsync(file: File, buffer: Buffer, visionClient: ImageAn
     }
 
     // Use project ID from credentials or environment
-    const credentials = process.env.GOOGLE_CREDENTIALS
-      ? JSON.parse(process.env.GOOGLE_CREDENTIALS)
-      : null;
-    const projectId = credentials?.project_id || process.env.GOOGLE_CLOUD_PROJECT;
+    let projectId: string | undefined;
+
+    if (process.env.GOOGLE_CREDENTIALS) {
+      const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
+      projectId = credentials.project_id;
+    } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      // Read project ID from the JSON file
+      const fs = require('fs');
+      const credentialsFile = fs.readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'utf8');
+      const credentials = JSON.parse(credentialsFile);
+      projectId = credentials.project_id;
+    } else {
+      projectId = process.env.GOOGLE_CLOUD_PROJECT;
+    }
 
     if (!projectId) {
       throw new Error('Google Cloud project ID not found in credentials');
@@ -188,7 +201,7 @@ async function processPDFAsync(file: File, buffer: Buffer, visionClient: ImageAn
     });
 
     console.log('Waiting for OCR to complete...');
-    const [result] = await operation.promise();
+    await operation.promise();
 
     console.log('OCR complete!');
     console.log('Reading results from GCS...');

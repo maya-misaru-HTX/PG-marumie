@@ -109,7 +109,7 @@ If Google Cloud credentials are not configured, the system automatically falls b
 
 ### Warning: "Falling back to OCR.space"
 
-**Solution**: This means Google Cloud credentials are not configured. The app will use OCR.space (1MB limit) instead.
+**Explanation**: This means Google Cloud credentials are not configured. The app will use OCR.space (1MB limit) instead.
 
 ## Security Notes
 
