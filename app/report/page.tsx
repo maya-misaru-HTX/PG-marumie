@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { ExpenseReport } from '@/lib/types';
-import { decodeReportFromURL, generateShareURL, copyToClipboard } from '@/lib/utils/urlState';
 import SummaryCards from '@/components/summary/SummaryCards';
 import IncomeExpenseBar from '@/components/charts/IncomeExpenseBar';
 import CategoryPies from '@/components/charts/CategoryPies';
@@ -12,18 +11,16 @@ import TopDonors from '@/components/charts/TopDonors';
 import TransactionTable from '@/components/table/TransactionTable';
 import SectionNav from '@/components/navigation/SectionNav';
 import Button from '@/components/ui/Button';
-import { Share2, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 function ReportContent() {
-  const searchParams = useSearchParams();
   const router = useRouter();
   const [report, setReport] = useState<ExpenseReport | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [shareSuccess, setShareSuccess] = useState(false);
 
   useEffect(() => {
     try {
-      // First, check sessionStorage for report data (used for large files to avoid HTTP 431)
+      // Check sessionStorage for report data
       const sessionData = sessionStorage.getItem('currentReport');
       if (sessionData) {
         const report = JSON.parse(sessionData) as ExpenseReport;
@@ -31,48 +28,13 @@ function ReportContent() {
         return;
       }
 
-      // Fallback: check URL parameter (used for sharing smaller reports)
-      const dataParam = searchParams.get('data');
-      if (!dataParam) {
-        setError('レポートデータが見つかりません');
-        return;
-      }
-
-      const decoded = decodeReportFromURL(dataParam);
-      if (!decoded) {
-        setError('レポートデータの読み込みに失敗しました');
-        return;
-      }
-      setReport(decoded);
+      // No data source found
+      setError('レポートデータが見つかりません');
     } catch (err) {
       console.error('Report loading error:', err);
       setError('レポートデータの解析に失敗しました');
     }
-  }, [searchParams]);
-
-  const handleShare = async () => {
-    if (!report) return;
-
-    try {
-      const shareUrl = generateShareURL(report, window.location.origin);
-
-      // Warn if URL is too long (might cause issues when sharing)
-      if (shareUrl.length > 8000) {
-        const confirmed = confirm(
-          'このレポートは大きすぎるため、URLでの共有が一部のブラウザで動作しない可能性があります。\n' +
-          'それでも続けますか？'
-        );
-        if (!confirmed) return;
-      }
-
-      await copyToClipboard(shareUrl);
-      setShareSuccess(true);
-      setTimeout(() => setShareSuccess(false), 3000);
-    } catch (err) {
-      console.error('Share error:', err);
-      alert('URLのコピーに失敗しました。レポートデータが大きすぎる可能性があります。');
-    }
-  };
+  }, []);
 
   if (error) {
     return (
@@ -118,16 +80,6 @@ function ReportContent() {
             <div className="flex-1 min-w-0">
               <SectionNav />
             </div>
-
-            {/* Share Button */}
-            <Button
-              variant={shareSuccess ? 'primary' : 'outline'}
-              onClick={handleShare}
-              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
-            >
-              <Share2 className="w-4 h-4" />
-              {shareSuccess ? 'コピーしました！' : 'URLをシェア'}
-            </Button>
           </div>
         </div>
       </div>

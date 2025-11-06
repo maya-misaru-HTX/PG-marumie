@@ -3,29 +3,20 @@
 import { useRouter } from 'next/navigation';
 import FileUpload from '@/components/upload/FileUpload';
 import { ExpenseReport } from '@/lib/types';
-import { encodeReportToURL } from '@/lib/utils/urlState';
 
 export default function Home() {
   const router = useRouter();
 
   const handleReportLoaded = (report: ExpenseReport) => {
     try {
-      // Store report in sessionStorage to avoid URL length limits (HTTP 431 errors)
-      // This allows large files to be processed without hitting URL size limits
+      // Store report in sessionStorage
       sessionStorage.setItem('currentReport', JSON.stringify(report));
 
-      // Navigate to report page without data in URL
-      // The report page will check sessionStorage first
+      // Navigate to report page
       router.push('/report');
     } catch (error) {
       console.error('Error storing report:', error);
-      // Fallback: try URL encoding for smaller reports
-      try {
-        const encoded = encodeReportToURL(report);
-        router.push(`/report?data=${encoded}`);
-      } catch (urlError) {
-        alert('レポートデータが大きすぎます。ファイルのサイズを減らしてください。');
-      }
+      alert('レポートデータの保存に失敗しました。');
     }
   };
 

@@ -48,3 +48,4 @@ env.local/
 !tsconfig.json
 !tsconfig.*.json
 !vercel.json
+.env*.local
