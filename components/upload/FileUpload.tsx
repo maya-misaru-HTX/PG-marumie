@@ -1,19 +1,18 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Upload, FileText, AlertCircle, Download } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import Button from '../ui/Button';
 import Card from '../ui/Card';
-import { parseCSV, generateCSVTemplate } from '@/lib/parsers/csvParser';
+import { parseXLSX } from '@/lib/parsers/xlsxParser';
 import { ExpenseReport } from '@/lib/types';
 import { enrichReportWithCalculations } from '@/lib/calculations/aggregations';
 
 interface FileUploadProps {
   onReportLoaded: (report: ExpenseReport) => void;
-  onPdfError?: (file: File) => void;
 }
 
-export default function FileUpload({ onReportLoaded, onPdfError }: FileUploadProps) {
+export default function FileUpload({ onReportLoaded }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,21 +64,11 @@ export default function FileUpload({ onReportLoaded, onPdfError }: FileUploadPro
       const fileType = file.name.toLowerCase();
       let report: ExpenseReport;
 
-      if (fileType.endsWith('.pdf')) {
-        // For PDFs, always show OCR tool instead of trying to parse
-        // This provides a better workflow for converting PDF to CSV via ChatGPT
-        setIsProcessing(false);
-        setUploadProgress('');
-        if (onPdfError) {
-          onPdfError(file);
-        }
-        return;
-      } else if (fileType.endsWith('.csv')) {
-        setUploadProgress('CSVを解析しています...');
-        const text = await file.text();
-        report = await parseCSV(text);
+      if (fileType.endsWith('.xlsx') || fileType.endsWith('.xls')) {
+        setUploadProgress('Excelファイルを解析しています...');
+        report = await parseXLSX(file);
       } else {
-        throw new Error('サポートされていないファイル形式です。PDFまたはCSVファイルをアップロードしてください。');
+        throw new Error('サポートされていないファイル形式です。Excelファイル（.xlsx または .xls）をアップロードしてください。');
       }
 
       setUploadProgress('データを集計しています...');
@@ -101,16 +90,6 @@ export default function FileUpload({ onReportLoaded, onPdfError }: FileUploadPro
     }
   };
 
-  const downloadTemplate = () => {
-    const template = generateCSVTemplate();
-    const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = '政治資金報告書テンプレート.csv';
-    link.click();
-    URL.revokeObjectURL(url);
-  };
 
   return (
     <Card>
@@ -138,7 +117,7 @@ export default function FileUpload({ onReportLoaded, onPdfError }: FileUploadPro
         <input
           id="file-input"
           type="file"
-          accept=".pdf,.csv"
+          accept=".xlsx,.xls"
           onChange={handleFileInput}
           className="hidden"
           disabled={isProcessing}
@@ -160,12 +139,17 @@ export default function FileUpload({ onReportLoaded, onPdfError }: FileUploadPro
               ファイルを選択
             </Button>
             <p className="text-xs text-text-secondary mt-2">
-              PDF・CSV形式に対応（最大20MB）
+              Excel形式に対応（最大20MB）
             </p>
           </>
         )}
       </div>
 
+      {error && (
+        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-[16px]">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
     </Card>
   );
 }

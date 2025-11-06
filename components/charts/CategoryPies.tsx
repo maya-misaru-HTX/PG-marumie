@@ -1,7 +1,7 @@
 'use client';
 
 import { CategoryBreakdown } from '@/lib/types';
-import { formatCurrency } from '@/lib/calculations/aggregations';
+import { formatJapaneseCurrency, formatPercentage } from '@/lib/calculations/aggregations';
 import Card from '../ui/Card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
@@ -13,45 +13,76 @@ interface CategoryPiesProps {
 export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
   const RADIAN = Math.PI / 180;
 
-  // Combine categories below 5% into "Other"
-  const combineSmallCategories = (categories: CategoryBreakdown[], total: number) => {
+  // Calculate luminance to determine if text should be white or black
+  const getTextColor = (hexColor: string): string => {
+    // Convert hex to RGB
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+
+    // Calculate relative luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    // Use white text for dark backgrounds, black for light backgrounds
+    // Threshold of 0.7 to ensure gray (#9CA3AF with luminance 0.636) uses white text
+    return luminance > 0.7 ? '#000000' : '#FFFFFF';
+  };
+
+  // Combine categories below 5% into "その他", merging with existing gap "その他"
+  const combineSmallCategories = (categories: CategoryBreakdown[], total: number, isIncome: boolean = false) => {
     const threshold = 0.05; // 5%
     const large: CategoryBreakdown[] = [];
     let otherAmount = 0;
+    let otherCount = 0;
+
+    // Find existing "その他" from gap calculation
+    const existingOther = categories.find(cat => cat.category === 'その他');
+    if (existingOther) {
+      otherAmount = existingOther.amount;
+      otherCount = existingOther.count;
+    }
 
     categories.forEach((cat) => {
+      // Skip existing "その他" - we'll recreate it with combined small categories
+      if (cat.category === 'その他') {
+        return;
+      }
+
       const percentage = cat.amount / total;
-      if (percentage >= threshold) {
+      // Always keep "個人からの寄付" visible in income chart, regardless of percentage
+      if (percentage >= threshold || (isIncome && cat.category === '個人からの寄付')) {
         large.push(cat);
       } else {
         otherAmount += cat.amount;
+        otherCount += cat.count;
       }
     });
 
-    // Add "Other" category if there are small categories
+    // Add combined "その他" category if there's any amount
     if (otherAmount > 0) {
       large.push({
         category: 'その他',
         amount: otherAmount,
-        percentage: Number(((otherAmount / total) * 100).toFixed(1)),
-        color: '#9CA3AF', // Gray color for "Other"
-        count: 0, // Combined count not tracked for "Other" category
+        percentage: Math.round((otherAmount / total) * 100),
+        color: '#9CA3AF',
+        count: otherCount,
       });
     }
 
     return large;
   };
 
-  const incomeData = combineSmallCategories(income.categories, income.total);
-  const expenseData = combineSmallCategories(expenses.categories, expenses.total);
+  const incomeData = combineSmallCategories(income.categories, income.total, true);
+  const expenseData = combineSmallCategories(expenses.categories, expenses.total, false);
 
-  const renderCustomizedLabel = ({
+  const renderCustomizedLabel = (data: CategoryBreakdown[]) => ({
     cx,
     cy,
     midAngle,
     innerRadius,
     outerRadius,
     percent,
+    index,
   }: any) => {
     if (percent < 0.05) return null; // Don't show labels for slices < 5%
 
@@ -59,16 +90,20 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
+    // Get the color for this slice
+    const sliceColor = data[index]?.color || '#000000';
+    const textColor = getTextColor(sliceColor);
+
     return (
       <text
         x={x}
         y={y}
-        fill="white"
+        fill={textColor}
         textAnchor="middle"
         dominantBaseline="central"
         className="text-sm font-bold"
       >
-        {`${(percent * 100).toFixed(0)}%`}
+        {`${Math.round(percent * 100)}%`}
       </text>
     );
   };
@@ -78,8 +113,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
       {/* Income Pie */}
       <Card>
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-text-primary">収入内訳</h2>
-          <p className="text-text-secondary mt-1">カテゴリー別の収入割合</p>
+          <h2 className="text-xl font-bold text-text-primary">収入の中身</h2>
         </div>
 
         {income.categories.length > 0 ? (
@@ -91,7 +125,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={renderCustomizedLabel}
+                  label={renderCustomizedLabel(incomeData)}
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="amount"
@@ -103,7 +137,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: number) => formatCurrency(value)}
+                  formatter={(value: number) => formatJapaneseCurrency(value)}
                   contentStyle={{
                     backgroundColor: 'white',
                     border: '1px solid #E5E7EB',
@@ -124,7 +158,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
                     <span className="text-text-primary">{cat.category}</span>
                   </div>
                   <span className="font-medium text-text-secondary">
-                    {cat.percentage}% ({formatCurrency(cat.amount)})
+                    {formatPercentage(cat.percentage)} ({formatJapaneseCurrency(cat.amount)})
                   </span>
                 </div>
               ))}
@@ -138,8 +172,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
       {/* Expense Pie */}
       <Card>
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-text-primary">支出内訳</h2>
-          <p className="text-text-secondary mt-1">カテゴリー別の支出割合</p>
+          <h2 className="text-xl font-bold text-text-primary">支出の中身</h2>
         </div>
 
         {expenses.categories.length > 0 ? (
@@ -151,7 +184,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={renderCustomizedLabel}
+                  label={renderCustomizedLabel(expenseData)}
                   outerRadius={100}
                   fill="#8884d8"
                   dataKey="amount"
@@ -163,7 +196,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: number) => formatCurrency(value)}
+                  formatter={(value: number) => formatJapaneseCurrency(value)}
                   contentStyle={{
                     backgroundColor: 'white',
                     border: '1px solid #E5E7EB',
@@ -184,7 +217,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
                     <span className="text-text-primary">{cat.category}</span>
                   </div>
                   <span className="font-medium text-text-secondary">
-                    {cat.percentage}% ({formatCurrency(cat.amount)})
+                    {formatPercentage(cat.percentage)} ({formatJapaneseCurrency(cat.amount)})
                   </span>
                 </div>
               ))}

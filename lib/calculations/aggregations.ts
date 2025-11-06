@@ -10,10 +10,14 @@ import { format, parse } from 'date-fns';
 
 export function calculateCategoryBreakdowns(
   transactions: Transaction[],
-  type: 'income' | 'expense'
+  type: 'income' | 'expense',
+  declaredTotal?: number
 ): CategoryBreakdown[] {
   const filtered = transactions.filter((t) => t.type === type);
-  const total = filtered.reduce((sum, t) => sum + t.amount, 0);
+  const transactionTotal = filtered.reduce((sum, t) => sum + t.amount, 0);
+
+  // Use declared total if provided, otherwise use transaction total
+  const total = declaredTotal ?? transactionTotal;
 
   // Group by category
   const categoryMap = new Map<string, { amount: number; count: number }>();
@@ -26,7 +30,7 @@ export function calculateCategoryBreakdowns(
     });
   });
 
-  // Convert to array with percentages
+  // Convert to array with percentages (based on declared total, not transaction total)
   const categories = Array.from(categoryMap.entries()).map(([category, data]) => {
     const percentage = total > 0 ? (data.amount / total) * 100 : 0;
     const color = getCategoryColor(category, type);
@@ -34,7 +38,7 @@ export function calculateCategoryBreakdowns(
     return {
       category,
       amount: data.amount,
-      percentage: Math.round(percentage),
+      percentage: Math.round(percentage), // Round to whole number
       color,
       count: data.count,
     };
@@ -88,9 +92,65 @@ export function calculateMonthlyData(transactions: Transaction[]): MonthlyData[]
 }
 
 export function enrichReportWithCalculations(report: ExpenseReport): ExpenseReport {
-  // Calculate category breakdowns
-  const incomeCategories = calculateCategoryBreakdowns(report.transactions, 'income');
-  const expenseCategories = calculateCategoryBreakdowns(report.transactions, 'expense');
+  // For pie charts, use "今年の収入" and "今年の支出" as the totals (excluding carryovers)
+  const thisYearIncome = report.summary.incomeTotal - report.summary.carriedFromPrevYear;
+  const thisYearExpense = report.summary.thisYearExpense ?? (report.summary.expenseTotal - report.summary.carriedToNextYear);
+
+  // Calculate category breakdowns with this year's totals for correct percentages
+  const incomeCategories = calculateCategoryBreakdowns(
+    report.transactions,
+    'income',
+    thisYearIncome
+  );
+  const expenseCategories = calculateCategoryBreakdowns(
+    report.transactions,
+    'expense',
+    thisYearExpense
+  );
+
+  // Calculate actual totals from transactions
+  const incomeFromTransactions = incomeCategories.reduce((sum, cat) => sum + cat.amount, 0);
+  const expenseFromTransactions = expenseCategories.reduce((sum, cat) => sum + cat.amount, 0);
+
+  // Add "その他" category for gaps between declared totals and transaction sums
+  const incomeGap = thisYearIncome - incomeFromTransactions;
+  const expenseGap = thisYearExpense - expenseFromTransactions;
+
+  // Process income categories - merge any existing "その他" with gap
+  let finalIncomeCategories = incomeCategories.filter(cat => cat.category !== 'その他');
+  const existingIncomeOther = incomeCategories.find(cat => cat.category === 'その他');
+
+  if (Math.abs(incomeGap) > 1 || existingIncomeOther) {
+    const totalOtherAmount = (existingIncomeOther?.amount || 0) + incomeGap;
+    if (Math.abs(totalOtherAmount) > 1) {
+      const percentage = thisYearIncome > 0 ? (totalOtherAmount / thisYearIncome) * 100 : 0;
+      finalIncomeCategories.push({
+        category: 'その他',
+        amount: totalOtherAmount,
+        percentage: Math.round(percentage),
+        color: '#9CA3AF',
+        count: existingIncomeOther?.count || 0,
+      });
+    }
+  }
+
+  // Process expense categories - merge any existing "その他" with gap
+  let finalExpenseCategories = expenseCategories.filter(cat => cat.category !== 'その他');
+  const existingExpenseOther = expenseCategories.find(cat => cat.category === 'その他');
+
+  if (Math.abs(expenseGap) > 1 || existingExpenseOther) {
+    const totalOtherAmount = (existingExpenseOther?.amount || 0) + expenseGap;
+    if (Math.abs(totalOtherAmount) > 1) {
+      const percentage = thisYearExpense > 0 ? (totalOtherAmount / thisYearExpense) * 100 : 0;
+      finalExpenseCategories.push({
+        category: 'その他',
+        amount: totalOtherAmount,
+        percentage: Math.round(percentage),
+        color: '#9CA3AF',
+        count: existingExpenseOther?.count || 0,
+      });
+    }
+  }
 
   // Calculate monthly data
   const monthlyData = calculateMonthlyData(report.transactions);
@@ -98,34 +158,84 @@ export function enrichReportWithCalculations(report: ExpenseReport): ExpenseRepo
   return {
     ...report,
     income: {
-      categories: incomeCategories,
-      total: incomeCategories.reduce((sum, cat) => sum + cat.amount, 0),
+      categories: finalIncomeCategories,
+      total: thisYearIncome, // Use this year's income (excluding carryover)
     },
     expenses: {
-      categories: expenseCategories,
-      total: expenseCategories.reduce((sum, cat) => sum + cat.amount, 0),
+      categories: finalExpenseCategories,
+      total: thisYearExpense, // Use this year's expense (excluding carryover to next year)
     },
     monthlyData,
   };
 }
 
+// Color palettes for dynamic category assignment
+const INCOME_COLOR_PALETTE = [
+  '#64D8C6', // Teal
+  '#4DB8A8', // Darker teal
+  '#3A9D8F', // Even darker teal
+  '#2A8276', // Dark teal
+  '#7CE3D3', // Light teal
+  '#A0EBE0', // Very light teal
+  '#5CC9B8', // Medium teal
+  '#8FE5D6', // Pale teal
+];
+
+const EXPENSE_COLOR_PALETTE = [
+  '#EF4444', // Red
+  '#DC2626', // Darker red
+  '#B91C1C', // Even darker red
+  '#F87171', // Light red
+  '#FCA5A5', // Very light red
+  '#FED7AA', // Orange-red
+  '#FB923C', // Orange
+  '#FDBA74', // Light orange
+];
+
+// Map to track assigned colors for consistency
+const categoryColorMap = new Map<string, string>();
+
 function getCategoryColor(category: string, type: 'income' | 'expense'): string {
+  // Special case for "その他"
+  if (category === 'その他') {
+    return '#9CA3AF'; // Gray
+  }
+
+  // Check if we've already assigned a color to this category
+  if (categoryColorMap.has(category)) {
+    return categoryColorMap.get(category)!;
+  }
+
   if (type === 'income') {
     const categoryKey = Object.keys(INCOME_CATEGORIES).find((key) =>
       category.includes(key)
     );
     if (categoryKey) {
-      return INCOME_CATEGORIES[categoryKey as keyof typeof INCOME_CATEGORIES].color;
+      const color = INCOME_CATEGORIES[categoryKey as keyof typeof INCOME_CATEGORIES].color;
+      categoryColorMap.set(category, color);
+      return color;
     }
-    return '#64D8C6'; // Default primary color
+
+    // Assign next available color from palette
+    const usedColors = Array.from(categoryColorMap.values());
+    const availableColor = INCOME_COLOR_PALETTE.find(c => !usedColors.includes(c)) || INCOME_COLOR_PALETTE[0];
+    categoryColorMap.set(category, availableColor);
+    return availableColor;
   } else {
     const categoryKey = Object.keys(EXPENSE_CATEGORIES).find((key) =>
       category.includes(key)
     );
     if (categoryKey) {
-      return EXPENSE_CATEGORIES[categoryKey as keyof typeof EXPENSE_CATEGORIES].color;
+      const color = EXPENSE_CATEGORIES[categoryKey as keyof typeof EXPENSE_CATEGORIES].color;
+      categoryColorMap.set(category, color);
+      return color;
     }
-    return '#EF4444'; // Default red color
+
+    // Assign next available color from palette
+    const usedColors = Array.from(categoryColorMap.values());
+    const availableColor = EXPENSE_COLOR_PALETTE.find(c => !usedColors.includes(c)) || EXPENSE_COLOR_PALETTE[0];
+    categoryColorMap.set(category, availableColor);
+    return availableColor;
   }
 }
 
@@ -139,4 +249,43 @@ export function formatCurrency(amount: number): string {
 
 export function formatNumber(num: number): string {
   return new Intl.NumberFormat('ja-JP').format(num);
+}
+
+// Format numbers in Japanese style with 万 (10,000) and 億 (100,000,000)
+export function formatJapaneseNumber(amount: number): string {
+  const absAmount = Math.abs(amount);
+
+  // Less than 10,000 - show as is
+  if (absAmount < 10000) {
+    return new Intl.NumberFormat('ja-JP').format(amount);
+  }
+
+  // 億 (100,000,000) and above
+  if (absAmount >= 100000000) {
+    const oku = amount / 100000000;
+    const man = (amount % 100000000) / 10000;
+
+    if (man === 0) {
+      // Clean number of 億
+      return `${new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 0 }).format(oku)}億`;
+    } else {
+      // Has both 億 and 万
+      return `${new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 0 }).format(oku)}億${new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 0 }).format(man)}万`;
+    }
+  }
+
+  // 万 (10,000) and above but less than 億
+  const man = amount / 10000;
+  return `${new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 0 }).format(man)}万`;
+}
+
+// Format currency with Japanese units (万/億)
+export function formatJapaneseCurrency(amount: number): string {
+  const formatted = formatJapaneseNumber(amount);
+  return `¥${formatted}`;
+}
+
+// Format percentage as whole number
+export function formatPercentage(percentage: number): string {
+  return `${Math.round(percentage)}%`;
 }
