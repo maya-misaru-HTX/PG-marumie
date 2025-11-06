@@ -18,6 +18,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
     const threshold = 0.05; // 5%
     const large: CategoryBreakdown[] = [];
     let otherAmount = 0;
+    let otherCount = 0;
 
     categories.forEach((cat) => {
       const percentage = cat.amount / total;
@@ -25,6 +26,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
         large.push(cat);
       } else {
         otherAmount += cat.amount;
+        otherCount += cat.count;
       }
     });
 
@@ -35,6 +37,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
         amount: otherAmount,
         percentage: Number(((otherAmount / total) * 100).toFixed(1)),
         color: '#9CA3AF', // Gray color for "Other"
+        count: otherCount,
       });
     }
 
