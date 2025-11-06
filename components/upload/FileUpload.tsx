@@ -95,7 +95,7 @@ export default function FileUpload({ onReportLoaded }: FileUploadProps) {
     <Card>
       <div className="text-center mb-6 md:mb-8">
         <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-text-primary mb-2 md:mb-4">
-          収支報告まるみえ君
+          贅沢まる見え君🔍
         </h1>
         <p className="text-text-secondary text-sm md:text-base lg:text-lg">
           政治家の収支報告書データを可視化します
