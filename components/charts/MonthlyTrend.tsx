@@ -1,7 +1,7 @@
 'use client';
 
 import { MonthlyData } from '@/lib/types';
-import { formatCurrency } from '@/lib/calculations/aggregations';
+import { formatJapaneseCurrency, formatJapaneseNumber } from '@/lib/calculations/aggregations';
 import Card from '../ui/Card';
 import {
   ComposedChart,
@@ -44,14 +44,14 @@ export default function MonthlyTrend({ monthlyData }: MonthlyTrendProps) {
             height={80}
           />
           <YAxis
-            tickFormatter={(value) => `¥${(value / 10000).toFixed(0)}万`}
+            tickFormatter={(value) => `¥${formatJapaneseNumber(value)}`}
             tick={{ fontSize: 12 }}
           />
           <Tooltip
             formatter={(value: number, name: string) => {
               // Show absolute value for expense in tooltip
               const displayValue = name === '支出' ? Math.abs(value) : value;
-              return formatCurrency(displayValue);
+              return formatJapaneseCurrency(displayValue);
             }}
             labelStyle={{ color: '#1F2937', fontWeight: 'bold' }}
             contentStyle={{
@@ -74,41 +74,6 @@ export default function MonthlyTrend({ monthlyData }: MonthlyTrendProps) {
           />
         </ComposedChart>
       </ResponsiveContainer>
-
-      <div className="mt-6 p-4 bg-neutral-50 rounded-[22px]">
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <p className="text-xs text-text-secondary mb-1">総収入（年間）</p>
-            <p className="text-base font-bold text-primary-600">
-              {formatCurrency(
-                monthlyData.reduce((sum, month) => sum + month.income, 0)
-              )}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-text-secondary mb-1">総支出（年間）</p>
-            <p className="text-base font-bold text-red-600">
-              {formatCurrency(
-                monthlyData.reduce((sum, month) => sum + month.expense, 0)
-              )}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-text-secondary mb-1">収支（年間）</p>
-            <p
-              className={`text-base font-bold ${
-                monthlyData.reduce((sum, month) => sum + month.balance, 0) >= 0
-                  ? 'text-primary-600'
-                  : 'text-red-600'
-              }`}
-            >
-              {formatCurrency(
-                monthlyData.reduce((sum, month) => sum + month.balance, 0)
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
     </Card>
   );
 }

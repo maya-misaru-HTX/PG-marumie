@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { Transaction } from '@/lib/types';
-import { formatCurrency } from '@/lib/calculations/aggregations';
+import { formatJapaneseCurrency } from '@/lib/calculations/aggregations';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 import { Search, ChevronDown, ChevronUp, Check } from 'lucide-react';
@@ -474,7 +474,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   }`}
                 >
                   {transaction.type === 'income' ? '+' : '-'}
-                  {formatCurrency(transaction.amount)}
+                  {formatJapaneseCurrency(transaction.amount)}
                 </td>
               </tr>
             ))}

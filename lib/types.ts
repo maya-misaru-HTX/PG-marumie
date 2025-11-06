@@ -12,6 +12,7 @@ export interface PoliticianInfo {
 export interface Summary {
   incomeTotal: number;
   expenseTotal: number;
+  thisYearExpense?: number;
   balance: number;
   carriedFromPrevYear: number;
   carriedToNextYear: number;
@@ -63,7 +64,7 @@ export interface ExpenseReport {
   monthlyData: MonthlyData[];
   metadata: {
     uploadedAt: string;
-    source: 'pdf' | 'csv';
+    source: 'pdf' | 'csv' | 'xlsx';
     fiscalYear: string;
   };
 }
