@@ -6,19 +6,20 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "postinstall": "cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/pdf.worker.min.mjs"
+    "lint": "eslint"
   },
   "dependencies": {
+    "@google-cloud/storage": "^7.17.3",
+    "@google-cloud/vision": "^5.3.4",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.552.0",
     "lz-string": "^1.5.0",
     "next": "16.0.1",
     "papaparse": "^5.5.3",
-    "pdfjs-dist": "^5.4.394",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "recharts": "^3.3.0",
+    "sharp": "^0.34.4",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
