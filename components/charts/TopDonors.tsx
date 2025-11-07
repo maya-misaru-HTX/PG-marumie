@@ -53,23 +53,31 @@ export default function TopDonors({ transactions }: TopDonorsProps) {
 
   return (
     <Card>
-      <div className="mb-6">
-        <h2 className="text-xl md:text-2xl font-bold text-text-primary">寄付団体トップ10</h2>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-bold text-text-primary">💰 寄付団体トップ10</h2>
+        <a
+          href="https://political-finance-database.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline whitespace-nowrap"
+        >
+          🔍 正体を詳しく調べる！
+        </a>
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {topDonors.map((donor, index) => (
           <div
             key={donor.name}
-            className="flex items-center justify-between p-4 bg-neutral-50 rounded-[16px] hover:bg-neutral-100 transition-colors"
+            className="flex items-center justify-between p-2.5 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors"
           >
-            <div className="flex items-center gap-4">
-              <div className="flex-shrink-0 w-8 h-8 bg-primary-500 text-white rounded-full flex items-center justify-center font-bold text-sm">
+            <div className="flex items-center gap-2.5">
+              <div className="flex-shrink-0 w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center font-bold text-xs">
                 {getRanking(index, donor.amount)}
               </div>
-              <p className="font-medium text-text-primary">{donor.name}</p>
+              <p className="font-medium text-text-primary text-sm line-clamp-2">{donor.name}</p>
             </div>
-            <p className="font-bold text-primary-600">{formatJapaneseCurrency(donor.amount)}</p>
+            <p className="font-bold text-primary-600 text-sm whitespace-nowrap ml-2">{formatJapaneseCurrency(donor.amount)}</p>
           </div>
         ))}
       </div>

@@ -17,10 +17,10 @@ type SortDirection = 'asc' | 'desc';
 export default function TransactionTable({ transactions }: TransactionTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [incomeCategoryFilter, setIncomeCategoryFilter] = useState<string[]>([]);
-  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState<string[]>([]);
+  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState<string[]>(['高級レストラン']);
   const [isIncomeDropdownOpen, setIsIncomeDropdownOpen] = useState(false);
   const [isExpenseDropdownOpen, setIsExpenseDropdownOpen] = useState(false);
-  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortField, setSortField] = useState<SortField>('amount');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [showAll, setShowAll] = useState(false);

@@ -8,10 +8,8 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: 'income-expense', label: '収支の流れ' },
-  { id: 'monthly-trend', label: '1年間の推移' },
-  { id: 'top-donors', label: '高額寄附者' },
-  { id: 'transactions', label: 'すべての出入金' },
+  { id: 'income-expense', label: 'お金の流れ' },
+  { id: 'top-restaurants', label: '高級レストラン' },
 ];
 
 export default function SectionNav() {
@@ -25,11 +23,18 @@ export default function SectionNav() {
       }));
 
       // Find which section is currently in view
-      const currentSection = sections.find((section) => {
-        if (!section.element) return false;
+      // Check from bottom to top to prioritize lower sections
+      let currentSection = null;
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const section = sections[i];
+        if (!section.element) continue;
         const rect = section.element.getBoundingClientRect();
-        return rect.top <= 150 && rect.bottom >= 150;
-      });
+        // If section's top is above the middle of viewport, it's the active one
+        if (rect.top <= 200) {
+          currentSection = section;
+          break;
+        }
+      }
 
       if (currentSection) {
         setActiveSection(currentSection.id);
@@ -55,22 +60,29 @@ export default function SectionNav() {
 
   return (
     <div className="flex gap-2 justify-center overflow-x-auto scrollbar-hide">
-      {navItems.map((item) => (
-        <button
-          key={item.id}
-          onClick={() => scrollToSection(item.id)}
-          className={`
-            px-4 py-2 rounded-[24px] whitespace-nowrap font-medium text-sm transition-colors
-            ${
-              activeSection === item.id
-                ? 'bg-primary-500 text-white'
-                : 'bg-neutral-100 text-text-secondary hover:bg-neutral-200'
-            }
-          `}
-        >
-          {item.label}
-        </button>
-      ))}
+      {navItems.map((item) => {
+        const isActive = activeSection === item.id;
+        const isRestaurant = item.id === 'top-restaurants';
+
+        return (
+          <button
+            key={item.id}
+            onClick={() => scrollToSection(item.id)}
+            className={`
+              px-4 py-2 rounded-[24px] whitespace-nowrap font-medium text-sm transition-colors
+              ${
+                isActive && isRestaurant
+                  ? 'bg-red-500 text-white'
+                  : isActive
+                  ? 'bg-primary-500 text-white'
+                  : 'bg-neutral-100 text-text-secondary hover:bg-neutral-200'
+              }
+            `}
+          >
+            {item.label}
+          </button>
+        );
+      })}
     </div>
   );
 }

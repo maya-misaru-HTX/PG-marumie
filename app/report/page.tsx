@@ -6,11 +6,10 @@ import { ExpenseReport } from '@/lib/types';
 import SummaryCards from '@/components/summary/SummaryCards';
 import IncomeExpenseBar from '@/components/charts/IncomeExpenseBar';
 import CategoryPies from '@/components/charts/CategoryPies';
-import MonthlyTrend from '@/components/charts/MonthlyTrend';
 import TopDonors from '@/components/charts/TopDonors';
+import TopRestaurants from '@/components/charts/TopRestaurants';
 import TransactionTable from '@/components/table/TransactionTable';
 import SectionNav from '@/components/navigation/SectionNav';
-import Button from '@/components/ui/Button';
 import { ArrowLeft } from 'lucide-react';
 
 function ReportContent() {
@@ -65,19 +64,29 @@ function ReportContent() {
       {/* Sticky Header */}
       <div className="sticky top-0 z-50 bg-white border-b-2 border-neutral-200 shadow-sm">
         <div className="max-w-[1032px] mx-auto px-4 md:px-8 py-4">
-          <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide">
-            {/* Back Button */}
-            <Button
-              variant="outline"
-              onClick={() => router.push('/')}
-              className="flex items-center gap-2 whitespace-nowrap flex-shrink-0"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              戻る
-            </Button>
+          <div className="flex items-center justify-between gap-4">
+            {/* Left: Back Button and Politician Info */}
+            <div className="flex items-center gap-4 flex-shrink-0">
+              <button
+                onClick={() => router.push('/')}
+                className="flex items-center gap-1.5 text-sm text-text-primary hover:text-primary-600 transition-colors whitespace-nowrap -ml-[30px] font-medium"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                戻る
+              </button>
 
-            {/* Section Navigation */}
-            <div className="flex-1 min-w-0">
+              <div className="flex items-baseline gap-3 ml-5">
+                <h1 className="text-xl md:text-2xl font-bold text-text-primary whitespace-nowrap">
+                  {report.politician.name}
+                </h1>
+                <p className="text-sm md:text-base text-text-secondary whitespace-nowrap">
+                  {report.politician.organization} ({report.politician.fiscalYear}年度)
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Section Navigation */}
+            <div className="flex-1 min-w-0 flex justify-end">
               <SectionNav />
             </div>
           </div>
@@ -87,15 +96,6 @@ function ReportContent() {
       {/* Content Sections */}
       <div className="px-4 md:px-8 py-8">
         <div className="max-w-[1032px] mx-auto space-y-8">
-          {/* Organization and Politician Info Header */}
-          <div className="text-center">
-            <h2 className="text-2xl md:text-3xl font-bold text-text-primary mb-2">
-              {report.politician.organization}
-            </h2>
-            <p className="text-lg md:text-xl text-text-secondary">
-              {report.politician.name} ({report.politician.fiscalYear}年度)
-            </p>
-          </div>
 
           {/* Summary Cards */}
           <SummaryCards summary={report.summary} />
@@ -103,19 +103,21 @@ function ReportContent() {
           {/* Income & Expense Section */}
           <div id="income-expense" className="scroll-mt-24 space-y-8">
             <IncomeExpenseBar summary={report.summary} />
-            <CategoryPies income={report.income} expenses={report.expenses} />
+
+            {/* Grid layout with Income Pie and Top Donors */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <CategoryPies income={report.income} expenses={report.expenses} />
+              </div>
+              <div id="top-donors" className="scroll-mt-24">
+                <TopDonors transactions={report.transactions} />
+              </div>
+            </div>
           </div>
 
-          {/* Monthly Trend Section */}
-          {report.monthlyData && report.monthlyData.length > 0 && (
-            <div id="monthly-trend" className="scroll-mt-24">
-              <MonthlyTrend monthlyData={report.monthlyData} />
-            </div>
-          )}
-
-          {/* Top Donors Section */}
-          <div id="top-donors" className="scroll-mt-24">
-            <TopDonors transactions={report.transactions} />
+          {/* Top Restaurants Section */}
+          <div id="top-restaurants" className="scroll-mt-24">
+            <TopRestaurants transactions={report.transactions} />
           </div>
 
           {/* Transaction Table Section */}

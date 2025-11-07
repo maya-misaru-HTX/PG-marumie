@@ -17,7 +17,7 @@ export default function SummaryCards({ summary }: SummaryCardsProps) {
       <Card>
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-sm text-text-secondary mb-1">収入合計</p>
+            <p className="text-sm text-text-secondary mb-1">もらったお金</p>
             <p className="text-2xl md:text-3xl font-bold text-primary-600">
               {formatJapaneseCurrency(summary.incomeTotal)}
             </p>
@@ -32,7 +32,7 @@ export default function SummaryCards({ summary }: SummaryCardsProps) {
       <Card>
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-sm text-text-secondary mb-1">今年の支出</p>
+            <p className="text-sm text-text-secondary mb-1">使ったお金</p>
             <p className="text-2xl md:text-3xl font-bold text-red-600">
               {formatJapaneseCurrency(thisYearExpense)}
             </p>
@@ -47,7 +47,7 @@ export default function SummaryCards({ summary }: SummaryCardsProps) {
       <Card>
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-sm text-text-secondary mb-1">余ったお金の繰越</p>
+            <p className="text-sm text-text-secondary mb-1">翌年に流した余りのお金</p>
             <p className="text-2xl md:text-3xl font-bold text-primary-600">
               {formatJapaneseCurrency(summary.carriedToNextYear)}
             </p>

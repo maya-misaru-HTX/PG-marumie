@@ -24,7 +24,7 @@ export default function IncomeExpenseBar({ summary }: IncomeExpenseBarProps) {
     {
       name: '支出',
       今年の出費: thisYearExpense,
-      余ったお金の繰越: summary.carriedToNextYear,
+      翌年に流した余りのお金: summary.carriedToNextYear,
       total: summary.expenseTotal,
     },
   ];
@@ -40,7 +40,7 @@ export default function IncomeExpenseBar({ summary }: IncomeExpenseBarProps) {
     const { x, y, width, height, value } = props;
     // Find the corresponding data item to get the total
     const dataItem = data.find(d =>
-      (d.今年の収入 && d.昨年からの繰越) || (d.今年の出費 && d.余ったお金の繰越)
+      (d.今年の収入 && d.昨年からの繰越) || (d.今年の出費 && d.翌年に流した余りのお金)
     );
 
     return (
@@ -61,7 +61,7 @@ export default function IncomeExpenseBar({ summary }: IncomeExpenseBarProps) {
   return (
     <Card>
       <div className="mb-6">
-        <h2 className="text-xl md:text-2xl font-bold text-text-primary">収支比較</h2>
+        <h2 className="text-xl md:text-2xl font-bold text-text-primary">💸 お金の流れ</h2>
       </div>
 
       {/* Legend above chart - responsive grid on mobile */}
@@ -81,7 +81,7 @@ export default function IncomeExpenseBar({ summary }: IncomeExpenseBarProps) {
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded flex-shrink-0" style={{ backgroundColor: '#FCA5A5' }}></div>
-            <span className="whitespace-nowrap">余ったお金の繰越</span>
+            <span className="whitespace-nowrap">翌年に流した余りのお金</span>
           </div>
         </div>
       </div>
@@ -110,8 +110,8 @@ export default function IncomeExpenseBar({ summary }: IncomeExpenseBarProps) {
           <Bar dataKey="今年の出費" stackId="expense" fill="#EF4444" radius={[0, 0, 0, 0]}>
             <LabelList dataKey="今年の出費" position="inside" formatter={formatLabel} fill="#fff" fontSize={16} />
           </Bar>
-          <Bar dataKey="余ったお金の繰越" stackId="expense" fill="#FCA5A5" radius={[0, 8, 8, 0]}>
-            <LabelList dataKey="余ったお金の繰越" position="inside" formatter={formatLabel} fill="#000" fontSize={16} />
+          <Bar dataKey="翌年に流した余りのお金" stackId="expense" fill="#FCA5A5" radius={[0, 8, 8, 0]}>
+            <LabelList dataKey="翌年に流した余りのお金" position="inside" formatter={formatLabel} fill="#000" fontSize={16} />
           </Bar>
         </BarChart>
       </ResponsiveContainer>
@@ -141,8 +141,8 @@ export default function IncomeExpenseBar({ summary }: IncomeExpenseBarProps) {
           <Bar dataKey="今年の出費" stackId="expense" fill="#EF4444" radius={[0, 0, 0, 0]}>
             <LabelList dataKey="今年の出費" position="inside" formatter={formatLabel} fill="#fff" fontSize={12} />
           </Bar>
-          <Bar dataKey="余ったお金の繰越" stackId="expense" fill="#FCA5A5" radius={[0, 8, 8, 0]}>
-            <LabelList dataKey="余ったお金の繰越" position="inside" formatter={formatLabel} fill="#000" fontSize={12} />
+          <Bar dataKey="翌年に流した余りのお金" stackId="expense" fill="#FCA5A5" radius={[0, 8, 8, 0]}>
+            <LabelList dataKey="翌年に流した余りのお金" position="inside" formatter={formatLabel} fill="#000" fontSize={12} />
           </Bar>
         </BarChart>
       </ResponsiveContainer>

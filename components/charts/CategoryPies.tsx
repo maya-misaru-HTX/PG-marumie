@@ -73,7 +73,6 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
   };
 
   const incomeData = combineSmallCategories(income.categories, income.total, true);
-  const expenseData = combineSmallCategories(expenses.categories, expenses.total, false);
 
   const renderCustomizedLabel = (data: CategoryBreakdown[]) => ({
     cx,
@@ -109,16 +108,16 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div>
       {/* Income Pie */}
       <Card>
         <div className="mb-6">
-          <h2 className="text-xl font-bold text-text-primary">収入の中身</h2>
+          <h2 className="text-xl font-bold text-text-primary">🚪 お金の入り口</h2>
         </div>
 
         {income.categories.length > 0 ? (
           <>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={320}>
               <PieChart>
                 <Pie
                   data={incomeData}
@@ -126,7 +125,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
                   cy="50%"
                   labelLine={false}
                   label={renderCustomizedLabel(incomeData)}
-                  outerRadius={100}
+                  outerRadius={125}
                   fill="#8884d8"
                   dataKey="amount"
                   startAngle={90}
@@ -147,12 +146,12 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
               </PieChart>
             </ResponsiveContainer>
 
-            <div className="mt-6 space-y-2">
+            <div className="mt-8 space-y-4">
               {incomeData.map((cat) => (
-                <div key={cat.category} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
+                <div key={cat.category} className="flex items-center justify-between text-base">
+                  <div className="flex items-center gap-2.5">
                     <div
-                      className="w-3 h-3 rounded-full"
+                      className="w-3.5 h-3.5 rounded-full"
                       style={{ backgroundColor: cat.color }}
                     />
                     <span className="text-text-primary">{cat.category}</span>
@@ -166,65 +165,6 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
           </>
         ) : (
           <p className="text-center text-text-secondary py-12">収入データがありません</p>
-        )}
-      </Card>
-
-      {/* Expense Pie */}
-      <Card>
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-text-primary">支出の中身</h2>
-        </div>
-
-        {expenses.categories.length > 0 ? (
-          <>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={expenseData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={renderCustomizedLabel(expenseData)}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="amount"
-                  startAngle={90}
-                  endAngle={-270}
-                >
-                  {expenseData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value: number) => formatJapaneseCurrency(value)}
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #E5E7EB',
-                    borderRadius: '8px',
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-
-            <div className="mt-6 space-y-2">
-              {expenseData.map((cat) => (
-                <div key={cat.category} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: cat.color }}
-                    />
-                    <span className="text-text-primary">{cat.category}</span>
-                  </div>
-                  <span className="font-medium text-text-secondary">
-                    {formatPercentage(cat.percentage)} ({formatJapaneseCurrency(cat.amount)})
-                  </span>
-                </div>
-              ))}
-            </div>
-          </>
-        ) : (
-          <p className="text-center text-text-secondary py-12">支出データがありません</p>
         )}
       </Card>
     </div>
