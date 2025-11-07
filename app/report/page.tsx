@@ -42,9 +42,12 @@ function ReportContent() {
           <div className="bg-white rounded-[22px] border border-black p-12">
             <h1 className="text-2xl font-bold text-text-primary mb-4">エラー</h1>
             <p className="text-text-secondary mb-8">{error}</p>
-            <Button variant="primary" onClick={() => router.push('/')}>
+            <button
+              onClick={() => router.push('/')}
+              className="px-6 py-3 bg-primary-500 text-white rounded-[24px] hover:bg-primary-600 transition-colors font-medium"
+            >
               トップページに戻る
-            </Button>
+            </button>
           </div>
         </div>
       </div>
