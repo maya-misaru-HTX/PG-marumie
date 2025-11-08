@@ -1916,8 +1916,8 @@ export const asoStaticReport: Omit<ExpenseReport, 'monthlyData' | 'metadata'> = 
       id: 'expense-182',
       date: '2023-12-07',
       category: '仲間への寄付（票集め）',
-      description: '自民党嘉麻市支部',
-      recipient: '自民党嘉麻市支部',
+      description: '自民嘉麻市支部',
+      recipient: '自民嘉麻市支部',
       location: '嘉麻市大隈340-1',
       amount: 400000,
       type: 'expense',
@@ -3408,7 +3408,7 @@ export const asoStaticReport: Omit<ExpenseReport, 'monthlyData' | 'metadata'> = 
 
 export const asoSummaryData = {
   politician: '麻生太郎',
-  party: '自民党',
+  party: '自民',
   organization: '九州素淮会',
   fiscalYear: 2023,
   totalIncome: 549831272,
