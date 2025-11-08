@@ -39,6 +39,41 @@ export default function TransactionTable({ transactions }: TransactionTableProps
       transactions.filter((t) => t.type === 'expense').map((t) => t.category)
     );
 
+    // Priority order for income categories
+    const incomePriority = [
+      'セルフ寄付（隠蔽型‼️）',
+      '企業・団体献金（癒着型‼️）',
+      '政治資金パーティー',
+    ];
+    const incomeBottomCategories = ['個人からの寄付'];
+
+    const sortedIncomeCats = Array.from(incomeCats).sort((a, b) => {
+      // Check if either is in bottom categories
+      const aIsBottom = incomeBottomCategories.includes(a);
+      const bIsBottom = incomeBottomCategories.includes(b);
+
+      // If both are bottom categories, maintain order
+      if (aIsBottom && bIsBottom) return 0;
+      // If only a is bottom, b comes first
+      if (aIsBottom) return 1;
+      // If only b is bottom, a comes first
+      if (bIsBottom) return -1;
+
+      const aIndex = incomePriority.indexOf(a);
+      const bIndex = incomePriority.indexOf(b);
+
+      // If both are in priority list, sort by priority order
+      if (aIndex !== -1 && bIndex !== -1) {
+        return aIndex - bIndex;
+      }
+      // If only a is in priority list, a comes first
+      if (aIndex !== -1) return -1;
+      // If only b is in priority list, b comes first
+      if (bIndex !== -1) return 1;
+      // Otherwise, sort alphabetically
+      return a.localeCompare(b);
+    });
+
     // Priority order for expense categories
     const expensePriority = [
       '寄附・交付金',
@@ -77,7 +112,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
     });
 
     return {
-      incomeCategories: Array.from(incomeCats).sort(),
+      incomeCategories: sortedIncomeCats,
       expenseCategories: sortedExpenseCats,
     };
   }, [transactions]);
