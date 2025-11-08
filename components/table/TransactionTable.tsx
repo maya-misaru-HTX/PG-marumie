@@ -461,7 +461,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   </div>
                 </th>
                 <th
-                  className="text-right py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[25%] md:w-auto"
+                  className="text-right py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[20%] md:w-auto"
                   onClick={() => handleSort('amount')}
                 >
                   <div className="flex items-center justify-end gap-1 md:gap-2">
@@ -469,6 +469,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                     <SortIcon field="amount" />
                   </div>
                 </th>
+                <th className="w-[5%] md:w-0"></th>
                 <th
                   className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[30%] md:w-auto"
                   onClick={() => handleSort('category')}
@@ -515,6 +516,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                     {transaction.type === 'income' ? '+' : '-'}
                     {formatJapaneseCurrency(transaction.amount)}
                   </td>
+                  <td className="w-[5%] md:w-0"></td>
                   <td className="py-2 px-2 md:py-3 md:px-4">
                     <Badge
                       color={transaction.type === 'income' ? '#64D8C6' : '#EF4444'}
