@@ -282,24 +282,12 @@ export default function TransactionTable({ transactions }: TransactionTableProps
     <Card>
       {/* Summary Line */}
       {hasActiveFilters && (
-        <div className="mb-4 md:mb-6 pb-2 md:pb-[10px] overflow-hidden">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-6">
-            <div className="flex-shrink-0 min-w-0">
-              <span className="text-sm md:text-2xl font-bold text-text-primary block break-words leading-tight">
-                {Array.from(new Set([...expenseCategoryFilter, ...incomeCategoryFilter])).join(', ') || 'なし'}
-              </span>
-            </div>
-            <div className="hidden md:block h-6 w-px bg-neutral-300 flex-shrink-0"></div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 md:gap-6 flex-shrink min-w-0">
-              <div className="whitespace-nowrap flex-shrink-0">
-                <span className="text-xs sm:text-sm md:text-2xl text-text-secondary">件数: </span>
-                <span className="text-xs sm:text-sm md:text-2xl font-bold text-text-primary">{filteredTotals.count}件</span>
-              </div>
-              <div className="hidden md:block h-6 w-px bg-neutral-300 flex-shrink-0"></div>
-              <div className="whitespace-nowrap flex-shrink-0">
-                <span className="text-xs sm:text-sm md:text-2xl text-text-secondary">合計金額: </span>
-                <span className="text-xs sm:text-sm md:text-2xl font-bold text-red-600">{formatJapaneseCurrency(filteredTotals.totalAmount)}</span>
-              </div>
+        <div className="mb-6">
+          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <h2 className="text-sm md:text-xl lg:text-2xl font-bold text-text-primary whitespace-nowrap break-words">{Array.from(new Set([...expenseCategoryFilter, ...incomeCategoryFilter])).join(', ') || 'なし'}</h2>
+            <div className="flex items-center gap-3 md:gap-4 text-sm md:text-xl lg:text-2xl">
+              <span className="text-text-secondary whitespace-nowrap">件数: <span className="font-bold text-text-primary">{filteredTotals.count}件</span></span>
+              <span className="text-text-secondary whitespace-nowrap">合計金額: <span className="font-bold text-red-600">{formatJapaneseCurrency(filteredTotals.totalAmount)}</span></span>
             </div>
           </div>
         </div>
@@ -309,13 +297,13 @@ export default function TransactionTable({ transactions }: TransactionTableProps
       <div className="mb-8">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="w-full flex items-center justify-between py-4 border-b-2 border-neutral-200 hover:border-red-300 transition-all mb-6 group"
+          className="w-full flex items-center justify-between py-3 md:py-4 border-b-2 border-neutral-200 hover:border-red-300 transition-all mb-6 group"
         >
-          <span className="text-sm md:text-base lg:text-lg text-text-primary group-hover:text-red-600 transition-colors">→ 他のカテゴリーもチェック</span>
+          <span className="text-xs md:text-base lg:text-lg text-text-primary group-hover:text-red-600 transition-colors">→ 他のカテゴリーもチェック</span>
           {showFilters ? (
-            <ChevronUp className="w-5 h-5 text-text-secondary group-hover:text-red-600 transition-colors" />
+            <ChevronUp className="w-4 h-4 md:w-5 md:h-5 text-text-secondary group-hover:text-red-600 transition-colors" />
           ) : (
-            <ChevronDown className="w-5 h-5 text-text-secondary group-hover:text-red-600 transition-colors" />
+            <ChevronDown className="w-4 h-4 md:w-5 md:h-5 text-text-secondary group-hover:text-red-600 transition-colors" />
           )}
         </button>
 
@@ -447,12 +435,12 @@ export default function TransactionTable({ transactions }: TransactionTableProps
 
       {/* Table - with scrollable container */}
       <div className="overflow-x-auto">
-        <div className="min-w-[600px] max-h-[720px] overflow-y-auto border-2 border-transparent rounded-[16px]">
-          <table className="w-full">
+        <div className="min-w-[540px] max-h-[720px] overflow-y-auto border-2 border-transparent rounded-[16px]">
+          <table className="w-full md:table-auto">
             <thead className="sticky top-0 bg-white border-b-2 border-neutral-200 z-10">
               <tr>
                 <th
-                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[30%] md:w-auto"
+                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50"
                   onClick={() => handleSort('description')}
                 >
                   <div className="flex items-center gap-1 md:gap-2">
@@ -461,7 +449,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   </div>
                 </th>
                 <th
-                  className="text-right py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[20%] md:w-auto"
+                  className="text-right py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50"
                   onClick={() => handleSort('amount')}
                 >
                   <div className="flex items-center justify-end gap-1 md:gap-2">
@@ -469,9 +457,8 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                     <SortIcon field="amount" />
                   </div>
                 </th>
-                <th className="w-[5%] md:w-0"></th>
                 <th
-                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[30%] md:w-auto"
+                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50"
                   onClick={() => handleSort('category')}
                 >
                   <div className="flex items-center gap-1 md:gap-2">
@@ -480,7 +467,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   </div>
                 </th>
                 <th
-                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[15%] md:w-auto"
+                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50"
                   onClick={() => handleSort('date')}
                 >
                   <div className="flex items-center gap-1 md:gap-2">
@@ -497,11 +484,11 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   className="border-b border-neutral-100 hover:bg-neutral-50"
                 >
                   <td className="py-2 px-2 md:py-3 md:px-4">
-                    <p className="text-xs md:text-sm font-medium text-text-primary">
+                    <p className="text-xs md:text-sm font-medium text-text-primary whitespace-nowrap">
                       {transaction.description}
                     </p>
                     {transaction.recipient && (
-                      <p className="text-[10px] md:text-xs text-text-secondary mt-0.5 md:mt-1">
+                      <p className="text-[10px] md:text-xs text-text-secondary mt-0.5 md:mt-1 whitespace-nowrap">
                         {transaction.recipient}
                       </p>
                     )}
@@ -516,7 +503,6 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                     {transaction.type === 'income' ? '+' : '-'}
                     {formatJapaneseCurrency(transaction.amount)}
                   </td>
-                  <td className="w-[5%] md:w-0"></td>
                   <td className="py-2 px-2 md:py-3 md:px-4">
                     <Badge
                       color={transaction.type === 'income' ? '#64D8C6' : '#EF4444'}

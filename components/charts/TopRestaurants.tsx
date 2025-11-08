@@ -119,7 +119,7 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
       </>
     );
 
-    const className = "relative flex flex-col p-2 sm:p-3 md:p-5 rounded-2xl bg-gradient-to-br from-white to-neutral-50 backdrop-blur-sm hover:shadow-lg hover:scale-105 transition-all duration-300 border border-white/50 hover:border-red-300 shadow-md flex-shrink-0 w-[100px] h-[100px] sm:w-[140px] sm:h-[140px] md:w-[190px] md:h-[190px]";
+    const className = "relative flex flex-col p-2 sm:p-3 md:p-5 rounded-2xl bg-gradient-to-br from-white to-neutral-50 backdrop-blur-sm hover:shadow-lg hover:scale-105 transition-all duration-300 border border-white/50 hover:border-red-300 shadow-md flex-shrink-0 w-[110px] h-[110px] sm:w-[140px] sm:h-[140px] md:w-[190px] md:h-[190px]";
     const style = { boxShadow: '0 4px 18px rgba(0, 0, 0, 0.08)' };
 
     if (restaurant.url) {
