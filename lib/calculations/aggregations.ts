@@ -106,7 +106,7 @@ export function calculateMonthlyData(transactions: Transaction[]): MonthlyData[]
   return monthlyData;
 }
 
-export function enrichReportWithCalculations(report: ExpenseReport): ExpenseReport {
+export function enrichReportWithCalculations(report: Omit<ExpenseReport, 'monthlyData' | 'metadata'>): ExpenseReport {
   // For pie charts, use "今年の収入" and "今年の支出" as the totals (excluding carryovers)
   const thisYearIncome = report.summary.incomeTotal - report.summary.carriedFromPrevYear;
   const thisYearExpense = report.summary.thisYearExpense ?? (report.summary.expenseTotal - report.summary.carriedToNextYear);
@@ -181,6 +181,11 @@ export function enrichReportWithCalculations(report: ExpenseReport): ExpenseRepo
       total: thisYearExpense, // Use this year's expense (excluding carryover to next year)
     },
     monthlyData,
+    metadata: {
+      uploadedAt: new Date().toISOString(),
+      source: 'xlsx',
+      fiscalYear: report.politician.fiscalYear.toString(),
+    },
   };
 }
 
