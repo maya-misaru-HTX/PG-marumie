@@ -7,6 +7,7 @@ import { ExternalLink } from 'lucide-react';
 interface PoliticianSummary {
   politician: string;
   party: string;
+  hereditary?: string;
   organization: string;
   fiscalYear: number;
   totalIncome: number;

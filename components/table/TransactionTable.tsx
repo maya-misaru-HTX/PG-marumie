@@ -16,8 +16,8 @@ type SortDirection = 'asc' | 'desc';
 
 export default function TransactionTable({ transactions }: TransactionTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [incomeCategoryFilter, setIncomeCategoryFilter] = useState<string[]>(['セルフ寄付（隠蔽型‼️）']);
-  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState<string[]>(['セルフ寄付（隠蔽型‼️）']);
+  const [incomeCategoryFilter, setIncomeCategoryFilter] = useState<string[]>(['セルフ寄付']);
+  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState<string[]>(['セルフ寄付']);
   const [isIncomeDropdownOpen, setIsIncomeDropdownOpen] = useState(false);
   const [isExpenseDropdownOpen, setIsExpenseDropdownOpen] = useState(false);
   const [sortField, setSortField] = useState<SortField>('amount');
@@ -41,9 +41,11 @@ export default function TransactionTable({ transactions }: TransactionTableProps
 
     // Priority order for income categories
     const incomePriority = [
-      'セルフ寄付（隠蔽型‼️）',
-      '企業・団体献金（癒着型‼️）',
+      'セルフ寄付',
+      '企業・団体献金',
       '政治資金パーティー',
+      'イベント・グッズ売上',
+      '政治団体からの寄付',
     ];
     const incomeBottomCategories = ['個人からの寄付'];
 
@@ -76,13 +78,12 @@ export default function TransactionTable({ transactions }: TransactionTableProps
 
     // Priority order for expense categories
     const expensePriority = [
-      '寄附・交付金',
-      '機関紙誌の発行',
-      '組織活動費',
-      '調査研究費',
-      '選挙関係費',
+      'セルフ寄付',
+      '仲間への寄付',
+      '高級レストラン',
+      '懇親会',
     ];
-    const bottomCategories = ['その他の経費'];
+    const bottomCategories: string[] = [];
 
     const sortedExpenseCats = Array.from(expenseCats).sort((a, b) => {
       // Check if either is in bottom categories
@@ -315,12 +316,20 @@ export default function TransactionTable({ transactions }: TransactionTableProps
 
   return (
     <Card>
+      {/* Title */}
+      <div className="mb-3">
+        <h2 className="text-sm md:text-xl lg:text-2xl font-bold text-text-primary whitespace-nowrap">📝 出入金の詳細</h2>
+      </div>
+
       {/* Summary Line */}
       {hasActiveFilters && (
-        <div className="mb-6">
+        <div className="mb-4">
           <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-            <h2 className="text-sm md:text-xl lg:text-2xl font-bold text-text-primary whitespace-nowrap break-words">{Array.from(new Set([...expenseCategoryFilter, ...incomeCategoryFilter])).join(', ') || 'なし'}</h2>
-            <div className="flex items-center gap-3 md:gap-4 text-sm md:text-xl lg:text-2xl">
+            <h2 className="text-xs md:text-base lg:text-lg whitespace-nowrap break-words">
+              <span className="text-text-secondary font-normal">選択中: </span>
+              <span className="font-bold text-text-primary">{Array.from(new Set([...expenseCategoryFilter, ...incomeCategoryFilter])).join(', ') || 'なし'}</span>
+            </h2>
+            <div className="flex items-center gap-3 md:gap-4 text-xs md:text-base lg:text-lg">
               <span className="text-text-secondary whitespace-nowrap">件数: <span className="font-bold text-text-primary">{filteredTotals.count}件</span></span>
               <span className="text-text-secondary whitespace-nowrap">合計金額: <span className="font-bold text-red-600">{formatJapaneseCurrency(filteredTotals.totalAmount)}</span></span>
             </div>
@@ -329,10 +338,10 @@ export default function TransactionTable({ transactions }: TransactionTableProps
       )}
 
       {/* Filters and Search Toggle */}
-      <div className="mb-8">
+      <div className="mb-4">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="w-full flex items-center justify-between py-3 md:py-4 border-b-2 border-neutral-200 hover:border-red-300 transition-all mb-6 group"
+          className="w-full flex items-center justify-between py-2 md:py-3 border-b-2 border-neutral-200 hover:border-red-300 transition-all mb-4 group"
         >
           <span className="text-xs md:text-base lg:text-lg text-text-primary group-hover:text-red-600 transition-colors">→ 他のカテゴリーもチェック</span>
           {showFilters ? (

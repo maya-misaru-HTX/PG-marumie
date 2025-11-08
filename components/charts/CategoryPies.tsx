@@ -3,7 +3,7 @@
 import { CategoryBreakdown } from '@/lib/types';
 import { formatJapaneseCurrency, formatPercentage } from '@/lib/calculations/aggregations';
 import Card from '../ui/Card';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 
 interface CategoryPiesProps {
   income: { categories: CategoryBreakdown[]; total: number };
@@ -74,7 +74,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
 
   const incomeData = combineSmallCategories(income.categories, income.total, true);
 
-  const renderCustomizedLabel = (data: CategoryBreakdown[]) => ({
+  const renderCustomizedLabel = (data: CategoryBreakdown[], fontSize: number) => ({
     cx,
     cy,
     midAngle,
@@ -100,7 +100,8 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
         fill={textColor}
         textAnchor="middle"
         dominantBaseline="central"
-        className="text-base font-bold"
+        fontSize={fontSize}
+        fontWeight="bold"
       >
         {`${Math.round(percent * 100)}%`}
       </text>
@@ -118,80 +119,89 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
         {income.categories.length > 0 ? (
           <>
             {/* Mobile version */}
-            <ResponsiveContainer width="100%" height={220} className="md:hidden">
-              <PieChart>
-                <Pie
-                  data={incomeData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={renderCustomizedLabel(incomeData)}
-                  outerRadius={90}
-                  fill="#8884d8"
-                  dataKey="amount"
-                  startAngle={90}
-                  endAngle={-270}
-                >
-                  {incomeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value: number) => formatJapaneseCurrency(value)}
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #E5E7EB',
-                    borderRadius: '8px',
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="flex flex-row items-center justify-center gap-1 md:hidden">
+              {/* Pie Chart */}
+              <div className="flex-shrink-0">
+                <PieChart width={140} height={140}>
+                  <Pie
+                    data={incomeData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={renderCustomizedLabel(incomeData, 11)}
+                    outerRadius={55}
+                    fill="#8884d8"
+                    dataKey="amount"
+                    startAngle={90}
+                    endAngle={-270}
+                  >
+                    {incomeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </div>
+
+              {/* Legend on the right */}
+              <div className="space-y-1.5">
+                {incomeData.map((cat) => (
+                  <div key={cat.category} className="flex items-center gap-1.5 text-[9px]">
+                    <div className="flex items-center gap-1">
+                      <div
+                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: cat.color }}
+                      />
+                      <span className="text-text-primary whitespace-nowrap">{cat.category}</span>
+                    </div>
+                    <span className="font-medium text-text-secondary whitespace-nowrap">
+                      {formatJapaneseCurrency(cat.amount)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
             {/* Desktop version */}
-            <ResponsiveContainer width="100%" height={280} className="hidden md:block">
-              <PieChart>
-                <Pie
-                  data={incomeData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={renderCustomizedLabel(incomeData)}
-                  outerRadius={120}
-                  fill="#8884d8"
-                  dataKey="amount"
-                  startAngle={90}
-                  endAngle={-270}
-                >
-                  {incomeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value: number) => formatJapaneseCurrency(value)}
-                  contentStyle={{
-                    backgroundColor: 'white',
-                    border: '1px solid #E5E7EB',
-                    borderRadius: '8px',
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="hidden md:flex flex-row items-center justify-center gap-3">
+              {/* Pie Chart */}
+              <div className="flex-shrink-0">
+                <PieChart width={280} height={280}>
+                  <Pie
+                    data={incomeData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={renderCustomizedLabel(incomeData, 16)}
+                    outerRadius={120}
+                    fill="#8884d8"
+                    dataKey="amount"
+                    startAngle={90}
+                    endAngle={-270}
+                  >
+                    {incomeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </div>
 
-            <div className="mt-4 md:mt-[34px] space-y-2 md:space-y-3 pb-2 md:pb-4">
-              {incomeData.map((cat) => (
-                <div key={cat.category} className="flex items-center justify-between text-xs md:text-base">
-                  <div className="flex items-center gap-1.5 md:gap-2.5">
-                    <div
-                      className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: cat.color }}
-                    />
-                    <span className="text-text-primary">{cat.category}</span>
+              {/* Legend on the right */}
+              <div className="min-w-0 space-y-3">
+                {incomeData.map((cat) => (
+                  <div key={cat.category} className="flex items-center gap-4 text-base">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div
+                        className="w-3.5 h-3.5 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: cat.color }}
+                      />
+                      <span className="text-text-primary truncate">{cat.category}</span>
+                    </div>
+                    <span className="font-medium text-text-secondary whitespace-nowrap">
+                      {formatJapaneseCurrency(cat.amount)}
+                    </span>
                   </div>
-                  <span className="font-medium text-text-secondary whitespace-nowrap ml-2">
-                    {formatJapaneseCurrency(cat.amount)}
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </>
         ) : (

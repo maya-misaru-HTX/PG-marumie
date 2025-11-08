@@ -9,7 +9,9 @@ import CategoryPies from '@/components/charts/CategoryPies';
 import TopDonors from '@/components/charts/TopDonors';
 import TopRestaurants from '@/components/charts/TopRestaurants';
 import TransactionTable from '@/components/table/TransactionTable';
+import PoliticianRadarChart from '@/components/charts/PoliticianRadarChart';
 import SectionNav from '@/components/navigation/SectionNav';
+import { formatJapaneseCurrency } from '@/lib/calculations/aggregations';
 import { ArrowLeft } from 'lucide-react';
 
 function ReportContent() {
@@ -78,19 +80,26 @@ function ReportContent() {
                 <span className="hidden sm:inline">戻る</span>
               </button>
 
-              <div className="flex flex-col sm:flex-row sm:items-baseline gap-0 sm:gap-3 ml-2 md:ml-5 min-w-0">
-                <h1 className="text-base md:text-xl lg:text-2xl font-bold text-text-primary truncate">
-                  {report.politician.name}
-                </h1>
-                <p className="text-xs md:text-sm lg:text-base text-text-secondary truncate">
-                  {report.politician.organization} ({report.politician.fiscalYear}年度)
-                </p>
+              <div className="flex flex-col gap-1 min-w-0 ml-2 md:ml-5">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-base md:text-xl lg:text-2xl font-bold text-text-primary truncate">
+                    {report.politician.name}
+                  </h1>
+                  {/* Organization and Hereditary Labels */}
+                  <div className="flex gap-1.5">
+                    {report.politician.party && (
+                      <span className="px-2 py-0.5 text-[10px] md:text-xs font-medium bg-blue-100 text-blue-700 rounded-full whitespace-nowrap">
+                        {report.politician.party}
+                      </span>
+                    )}
+                    {report.politician.hereditary && (
+                      <span className="px-2 py-0.5 text-[10px] md:text-xs font-medium bg-purple-100 text-purple-700 rounded-full whitespace-nowrap">
+                        世襲{report.politician.hereditary}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-
-            {/* Right: Section Navigation */}
-            <div className="flex-1 min-w-0 flex justify-end">
-              <SectionNav />
             </div>
           </div>
         </div>
@@ -100,22 +109,59 @@ function ReportContent() {
       <div className="px-[30px] py-4 md:py-8">
         <div className="max-w-[826px] mx-auto space-y-4 md:space-y-8">
 
-          {/* Summary Cards */}
-          <SummaryCards summary={report.summary} />
-
-          {/* Income & Expense Section */}
-          <div id="income-expense" className="scroll-mt-24 space-y-8">
-            <IncomeExpenseBar summary={report.summary} />
-
-            {/* Grid layout with Income Pie and Top Donors */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
-                <CategoryPies income={report.income} expenses={report.expenses} />
+          {/* Politician Headshot and Radar Chart */}
+          {report.politician.headshotUrl && (
+            <div style={{ marginTop: '0px' }}>
+              {/* Mobile Layout - Stacked */}
+              <div className="flex flex-col items-center gap-4 md:hidden">
+                <div className="w-48 h-48">
+                  <img
+                    src={report.politician.headshotUrl}
+                    alt={report.politician.name}
+                    className="w-full h-full rounded-full object-cover border-4 border-neutral-200 shadow-lg"
+                  />
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-text-primary">
+                    戦闘力 <span style={{ color: '#14b8a6' }}>{formatJapaneseCurrency(report.summary.incomeTotal)}</span>
+                  </p>
+                </div>
+                <div className="w-full -my-4 mb-5">
+                  <PoliticianRadarChart transactions={report.transactions} summary={report.summary} />
+                </div>
               </div>
-              <div id="top-donors" className="scroll-mt-24">
-                <TopDonors transactions={report.transactions} incomeCategories={report.income.categories} />
+
+              {/* Desktop Layout - Side by Side */}
+              <div className="hidden md:flex md:flex-row md:items-start md:gap-8 md:justify-center">
+                <div className="flex flex-col items-center gap-4 flex-shrink-0">
+                  <div className="w-64 h-64">
+                    <img
+                      src={report.politician.headshotUrl}
+                      alt={report.politician.name}
+                      className="w-full h-full rounded-full object-cover border-4 border-neutral-200 shadow-lg"
+                    />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-4xl font-bold text-text-primary">
+                      戦闘力 <span style={{ color: '#14b8a6' }}>{formatJapaneseCurrency(report.summary.incomeTotal)}</span>
+                    </p>
+                  </div>
+                </div>
+                <div className="w-full max-w-md flex-shrink-0 -my-4 mb-5">
+                  <PoliticianRadarChart transactions={report.transactions} summary={report.summary} />
+                </div>
               </div>
             </div>
+          )}
+
+          {/* Income Pie Section */}
+          <div className="scroll-mt-24">
+            <CategoryPies income={report.income} expenses={report.expenses} />
+          </div>
+
+          {/* Top Donors Section */}
+          <div id="top-donors" className="scroll-mt-24">
+            <TopDonors transactions={report.transactions} incomeCategories={report.income.categories} />
           </div>
 
           {/* Top Restaurants Section */}

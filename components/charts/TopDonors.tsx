@@ -52,13 +52,13 @@ export default function TopDonors({ transactions, incomeCategories }: TopDonorsP
     .map(([name, data]) => ({ name, amount: data.amount, category: data.category, color: data.color }))
     .sort((a, b) => b.amount - a.amount);
 
-  // Get top 30, but include all donors with the same amount as the 30th donor
-  let topDonors = allDonors.slice(0, 30);
+  // Get top 15, but include all donors with the same amount as the 15th donor
+  let topDonors = allDonors.slice(0, 15);
 
-  if (allDonors.length > 30) {
-    const thirtiethAmount = allDonors[29].amount;
-    // Find all donors with the same amount as the 30th donor
-    const additionalDonors = allDonors.slice(30).filter(d => d.amount === thirtiethAmount);
+  if (allDonors.length > 15) {
+    const fifteenthAmount = allDonors[14].amount;
+    // Find all donors with the same amount as the 15th donor
+    const additionalDonors = allDonors.slice(15).filter(d => d.amount === fifteenthAmount);
     topDonors = [...topDonors, ...additionalDonors];
   }
 
@@ -68,16 +68,16 @@ export default function TopDonors({ transactions, incomeCategories }: TopDonorsP
 
   // Calculate ranking labels (handle ties)
   const getRanking = (index: number, amount: number): number => {
-    if (index < 29) return index + 1;
-    // For 30th place and beyond, check if tied with 30th
-    const thirtiethAmount = allDonors[29].amount;
-    return amount === thirtiethAmount ? 30 : index + 1;
+    if (index < 14) return index + 1;
+    // For 15th place and beyond, check if tied with 15th
+    const fifteenthAmount = allDonors[14].amount;
+    return amount === fifteenthAmount ? 15 : index + 1;
   };
 
   return (
     <Card>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm md:text-xl lg:text-2xl font-bold text-text-primary whitespace-nowrap">💰 収入トップ30</h2>
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <h2 className="text-sm md:text-xl lg:text-2xl font-bold text-text-primary whitespace-nowrap">💰 トップ収入源</h2>
         <a
           href="https://political-finance-database.com/"
           target="_blank"
@@ -88,24 +88,39 @@ export default function TopDonors({ transactions, incomeCategories }: TopDonorsP
         </a>
       </div>
 
-      <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-300 scrollbar-track-neutral-100 hover:scrollbar-thumb-neutral-400">
-        {topDonors.map((donor, index) => (
-          <div
-            key={donor.name}
-            className="flex items-center justify-between p-2.5 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors"
-          >
-            <div className="flex items-center gap-2.5">
-              <div
-                className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 text-white rounded-full flex items-center justify-center font-bold text-[10px] md:text-xs"
-                style={{ backgroundColor: donor.color }}
-              >
-                {getRanking(index, donor.amount)}
+      <div className="space-y-2 max-h-[165px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-300 scrollbar-track-neutral-100 hover:scrollbar-thumb-neutral-400">
+        {topDonors.map((donor, index) => {
+          const ranking = getRanking(index, donor.amount);
+          const isTop1 = ranking === 1;
+          const isTop3 = ranking <= 3;
+
+          return (
+            <div
+              key={donor.name}
+              className={`flex items-center justify-between p-2.5 rounded-lg ${
+                isTop1
+                  ? 'bg-teal-50 border border-teal-200 shadow-lg'
+                  : 'bg-neutral-50'
+              }`}
+            >
+              <div className="flex items-center gap-2 md:gap-2.5 min-w-0">
+                <div
+                  className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 text-white rounded-full flex items-center justify-center font-bold text-[10px] md:text-xs"
+                  style={{ backgroundColor: donor.color }}
+                >
+                  {ranking}
+                </div>
+                <p className={`font-medium text-[10px] md:text-sm line-clamp-2 min-w-0 ${isTop1 ? 'font-bold text-text-primary' : 'text-text-primary'}`}>
+                  {donor.name}
+                  <span className="text-text-secondary font-normal">（{donor.category}）</span>
+                </p>
               </div>
-              <p className="font-medium text-text-primary text-xs md:text-sm line-clamp-2">{donor.name}</p>
+              <p className={`font-bold text-[10px] md:text-sm whitespace-nowrap ml-1 md:ml-2 ${isTop1 ? 'text-teal-700' : 'text-primary-600'}`}>
+                {formatJapaneseCurrency(donor.amount)}
+              </p>
             </div>
-            <p className="font-bold text-primary-600 text-xs md:text-sm whitespace-nowrap ml-2">{formatJapaneseCurrency(donor.amount)}</p>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </Card>
   );

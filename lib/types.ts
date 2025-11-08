@@ -4,9 +4,12 @@ export interface PoliticianInfo {
   name: string;
   organization: string;
   fiscalYear: string;
+  party?: string;
+  hereditary?: string;
   address?: string;
   accountant?: string;
   representative?: string;
+  headshotUrl?: string;
 }
 
 export interface Summary {
