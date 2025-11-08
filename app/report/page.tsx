@@ -66,13 +66,13 @@ function ReportContent() {
     <div className="min-h-screen bg-neutral-50">
       {/* Sticky Header */}
       <div className="sticky top-0 z-50 bg-white border-b-2 border-neutral-200 shadow-sm">
-        <div className="max-w-[826px] mx-auto px-[50px] py-3 md:py-4">
+        <div className="max-w-[826px] mx-auto px-[30px] py-3 md:py-4">
           <div className="flex items-center justify-between gap-2 md:gap-4">
             {/* Left: Back Button and Politician Info */}
             <div className="flex items-center gap-2 md:gap-4 flex-shrink-0 min-w-0">
               <button
                 onClick={() => router.push('/')}
-                className="flex items-center gap-1 md:gap-1.5 text-xs md:text-sm text-text-primary hover:text-primary-600 transition-colors whitespace-nowrap -ml-[15px] md:-ml-[30px] font-medium"
+                className="flex items-center gap-1 md:gap-1.5 text-xs md:text-sm text-text-primary hover:text-primary-600 transition-colors whitespace-nowrap -ml-[9px] md:-ml-[18px] font-medium"
               >
                 <ArrowLeft className="w-3 h-3 md:w-4 md:h-4" />
                 <span className="hidden sm:inline">戻る</span>
@@ -97,7 +97,7 @@ function ReportContent() {
       </div>
 
       {/* Content Sections */}
-      <div className="px-[50px] py-4 md:py-8">
+      <div className="px-[30px] py-4 md:py-8">
         <div className="max-w-[826px] mx-auto space-y-4 md:space-y-8">
 
           {/* Summary Cards */}

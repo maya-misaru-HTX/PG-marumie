@@ -45,7 +45,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-6 px-[50px] md:py-12">
+    <div className="min-h-screen bg-neutral-50 py-6 px-[30px] md:py-12">
       <div className="max-w-[826px] mx-auto space-y-6 md:space-y-12">
         {/* Header */}
         <div className="text-center space-y-2">
