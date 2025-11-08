@@ -205,9 +205,11 @@ function extractTransactions(workbook: XLSX.WorkBook): Transaction[] {
     const dateCol = findColumnIndex(headers, ['年月日', '日付', '月日']);
     const amountCol = findColumnIndex(headers, ['金額', '額']);
     const categoryCol = findColumnIndex(headers, ['項目別区分', 'カテゴリー', '区分']);
+    const subcategoryCol = findColumnIndex(headers, ['飲食ジャンル', 'サブカテゴリー', 'ジャンル']);
     const descCol = findColumnIndex(headers, ['支出の目的', '項目', '目的', '内容']);
     const recipientCol = findColumnIndex(headers, ['支出を受けた者', '氏名', '団体名', '寄附者', '支出先']);
     const addressCol = findColumnIndex(headers, ['住所', '所在地']);
+    const urlCol = findColumnIndex(headers, ['URL', 'url', 'ウェブサイト']);
     const notesCol = findColumnIndex(headers, ['備考', 'メモ']);
 
     // Determine if this is income or expense based on sheet name
@@ -226,9 +228,11 @@ function extractTransactions(workbook: XLSX.WorkBook): Transaction[] {
         id: uuidv4(),
         date: dateCol >= 0 ? parseDate(row[dateCol]) : new Date().toISOString().split('T')[0],
         category: categoryCol >= 0 ? normalizeCategory(String(row[categoryCol] || ''), type) : 'その他',
+        subcategory: subcategoryCol >= 0 ? String(row[subcategoryCol] || '').trim() : undefined,
         description: descCol >= 0 ? String(row[descCol] || '') : '',
         recipient: recipientCol >= 0 ? String(row[recipientCol] || '') : undefined,
         location: addressCol >= 0 ? String(row[addressCol] || '') : undefined,
+        url: urlCol >= 0 ? String(row[urlCol] || '').trim() : undefined,
         amount,
         type,
         notes: notesCol >= 0 ? String(row[notesCol] || '') : undefined,
@@ -386,10 +390,12 @@ function extractTransactionsNew(workbook: XLSX.WorkBook): Transaction[] {
 
   const typeCol = headers.findIndex(h => h === 'タイプ');
   const categoryCol = headers.findIndex(h => h === 'カテゴリー');
+  const subcategoryCol = findColumnIndex(headers, ['飲食ジャンル', 'サブカテゴリー', 'ジャンル']);
   const recipientCol = headers.findIndex(h => h === '支出先/寄附者');
   const amountCol = headers.findIndex(h => h.includes('金額'));
   const dateCol = headers.findIndex(h => h === '年月日');
   const addressCol = headers.findIndex(h => h === '住所');
+  const urlCol = findColumnIndex(headers, ['URL', 'url', 'ウェブサイト']);
 
   // Parse data rows (skip header)
   for (let i = 1; i < data.length; i++) {
@@ -412,8 +418,11 @@ function extractTransactionsNew(workbook: XLSX.WorkBook): Transaction[] {
       id: uuidv4(),
       date: parseDateNew(dateValue),
       category: category || (type === 'income' ? 'その他の収入' : 'その他の経費'),
+      subcategory: subcategoryCol >= 0 ? String(row[subcategoryCol] || '').trim() : undefined,
       description,
       recipient: recipient || undefined,
+      location: addressCol >= 0 ? String(row[addressCol] || '').trim() : undefined,
+      url: urlCol >= 0 ? String(row[urlCol] || '').trim() : undefined,
       amount,
       type,
     };

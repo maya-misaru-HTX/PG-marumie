@@ -26,6 +26,7 @@ export interface Transaction {
   description: string;
   recipient?: string;
   location?: string;
+  url?: string;
   amount: number;
   type: 'income' | 'expense';
   notes?: string;
@@ -71,12 +72,12 @@ export interface ExpenseReport {
 
 // Category mapping for Japanese expense types
 export const INCOME_CATEGORIES = {
-  '個人からの寄附': { en: 'individual-donation', color: '#64D8C6' },
-  '法人その他の団体からの寄附': { en: 'corporate-donation', color: '#4BC4B0' },
-  '政治団体からの寄附': { en: 'political-donation', color: '#238778' },
-  '機関紙誌の発行による収入': { en: 'publication-income', color: '#BCECD3' },
-  '借入金': { en: 'loans', color: '#E6F7F4' },
-  'その他の収入': { en: 'other-income', color: '#9CA3AF' },
+  '個人からの寄附': { en: 'individual-donation', color: '#1A5E56' },
+  '法人その他の団体からの寄附': { en: 'corporate-donation', color: '#238778' },
+  '政治団体からの寄附': { en: 'political-donation', color: '#4BC4B0' },
+  '機関紙誌の発行による収入': { en: 'publication-income', color: '#64D8C6' },
+  '借入金': { en: 'loans', color: '#BCECD3' },
+  'その他の収入': { en: 'other-income', color: '#E6F7F4' },
 } as const;
 
 export const EXPENSE_CATEGORIES = {

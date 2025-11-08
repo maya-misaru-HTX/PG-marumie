@@ -33,19 +33,34 @@ export function calculateCategoryBreakdowns(
   // Convert to array with percentages (based on declared total, not transaction total)
   const categories = Array.from(categoryMap.entries()).map(([category, data]) => {
     const percentage = total > 0 ? (data.amount / total) * 100 : 0;
-    const color = getCategoryColor(category, type);
 
     return {
       category,
       amount: data.amount,
       percentage: Math.round(percentage), // Round to whole number
-      color,
+      color: '', // Will assign after sorting
       count: data.count,
     };
   });
 
   // Sort by amount descending
-  return categories.sort((a, b) => b.amount - a.amount);
+  const sorted = categories.sort((a, b) => b.amount - a.amount);
+
+  // Assign colors based on rank (largest = darkest, smallest = lightest)
+  const gradationPalette = type === 'income'
+    ? ['#1A5E56', '#238778', '#2FA897', '#4BC4B0', '#64D8C6', '#8FE5D6', '#BCECD3', '#E6F7F4']
+    : ['#7F1D1D', '#991B1B', '#B91C1C', '#DC2626', '#EF4444', '#F87171', '#FCA5A5', '#FEE2E2'];
+
+  return sorted.map((cat, index) => {
+    // Special case for "その他" - always gray
+    if (cat.category === 'その他' || cat.category === 'その他の収入' || cat.category === 'その他の経費') {
+      return { ...cat, color: '#9CA3AF' };
+    }
+
+    // Assign color from gradation palette based on index
+    const colorIndex = Math.min(index, gradationPalette.length - 1);
+    return { ...cat, color: gradationPalette[colorIndex] };
+  });
 }
 
 export function calculateMonthlyData(transactions: Transaction[]): MonthlyData[] {
@@ -262,21 +277,21 @@ export function formatJapaneseNumber(amount: number): string {
 
   // 億 (100,000,000) and above
   if (absAmount >= 100000000) {
-    const oku = amount / 100000000;
-    const man = (amount % 100000000) / 10000;
+    const oku = Math.floor(amount / 100000000);
+    const man = Math.floor((amount % 100000000) / 10000);
 
     if (man === 0) {
       // Clean number of 億
-      return `${new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 0 }).format(oku)}億`;
+      return `${new Intl.NumberFormat('ja-JP').format(oku)}億`;
     } else {
       // Has both 億 and 万
-      return `${new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 0 }).format(oku)}億${new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 0 }).format(man)}万`;
+      return `${new Intl.NumberFormat('ja-JP').format(oku)}億${new Intl.NumberFormat('ja-JP').format(man)}万`;
     }
   }
 
   // 万 (10,000) and above but less than 億
-  const man = amount / 10000;
-  return `${new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 0 }).format(man)}万`;
+  const man = Math.floor(amount / 10000);
+  return `${new Intl.NumberFormat('ja-JP').format(man)}万`;
 }
 
 // Format currency with Japanese units (万/億)

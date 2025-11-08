@@ -113,7 +113,7 @@ function ReportContent() {
                 <CategoryPies income={report.income} expenses={report.expenses} />
               </div>
               <div id="top-donors" className="scroll-mt-24">
-                <TopDonors transactions={report.transactions} />
+                <TopDonors transactions={report.transactions} incomeCategories={report.income.categories} />
               </div>
             </div>
           </div>

@@ -11,13 +11,13 @@ interface TransactionTableProps {
   transactions: Transaction[];
 }
 
-type SortField = 'date' | 'amount' | 'category';
+type SortField = 'date' | 'amount' | 'category' | 'description';
 type SortDirection = 'asc' | 'desc';
 
 export default function TransactionTable({ transactions }: TransactionTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [incomeCategoryFilter, setIncomeCategoryFilter] = useState<string[]>([]);
-  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState<string[]>(['高級レストラン']);
+  const [incomeCategoryFilter, setIncomeCategoryFilter] = useState<string[]>(['セルフ寄付（隠蔽型）']);
+  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState<string[]>(['セルフ寄付（隠蔽型）']);
   const [isIncomeDropdownOpen, setIsIncomeDropdownOpen] = useState(false);
   const [isExpenseDropdownOpen, setIsExpenseDropdownOpen] = useState(false);
   const [sortField, setSortField] = useState<SortField>('amount');
@@ -147,6 +147,8 @@ export default function TransactionTable({ transactions }: TransactionTableProps
         comparison = a.amount - b.amount;
       } else if (sortField === 'category') {
         comparison = a.category.localeCompare(b.category);
+      } else if (sortField === 'description') {
+        comparison = a.description.localeCompare(b.description);
       }
 
       return sortDirection === 'asc' ? comparison : -comparison;
@@ -164,6 +166,15 @@ export default function TransactionTable({ transactions }: TransactionTableProps
 
   // Determine if filters are active
   const hasActiveFilters = searchQuery || incomeCategoryFilter.length > 0 || expenseCategoryFilter.length > 0;
+
+  // Calculate totals for filtered transactions
+  const filteredTotals = useMemo(() => {
+    const total = filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
+    return {
+      count: filteredTransactions.length,
+      totalAmount: total,
+    };
+  }, [filteredTransactions]);
 
   // Display logic: show initial 8 items if no filters and not showing all, otherwise use pagination
   const displayTransactions = useMemo(() => {
@@ -225,11 +236,19 @@ export default function TransactionTable({ transactions }: TransactionTableProps
   };
 
   const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) return null;
-    return sortDirection === 'asc' ? (
-      <ChevronUp className="w-4 h-4" />
-    ) : (
-      <ChevronDown className="w-4 h-4" />
+    if (sortField === field) {
+      return sortDirection === 'asc' ? (
+        <ChevronUp className="w-4 h-4 text-primary-600" />
+      ) : (
+        <ChevronDown className="w-4 h-4 text-primary-600" />
+      );
+    }
+    // Show a neutral icon for sortable columns
+    return (
+      <div className="flex flex-col gap-0">
+        <ChevronUp className="w-3 h-3 text-neutral-300 -mb-1" />
+        <ChevronDown className="w-3 h-3 text-neutral-300" />
+      </div>
     );
   };
 
@@ -260,30 +279,79 @@ export default function TransactionTable({ transactions }: TransactionTableProps
 
   return (
     <Card>
-      <div className="mb-6">
-        <h2 className="text-xl md:text-2xl font-bold text-text-primary mb-4">
-          すべての出入金
-        </h2>
-        <p className="text-text-secondary">
-          これまでにデータ連携された出入金の明細（全{filteredTransactions.length}件）
-        </p>
-      </div>
+      {/* Summary Line */}
+      {hasActiveFilters && (
+        <div className="mb-6 pb-[10px]">
+          <div className="flex flex-wrap items-center gap-6">
+            <div>
+              <span className="text-2xl font-bold text-text-primary">
+                {Array.from(new Set([...expenseCategoryFilter, ...incomeCategoryFilter])).join(', ') || 'なし'}
+              </span>
+            </div>
+            <div className="h-6 w-px bg-neutral-300"></div>
+            <div>
+              <span className="text-2xl text-text-secondary">件数: </span>
+              <span className="text-2xl font-bold text-text-primary">{filteredTotals.count}件</span>
+            </div>
+            <div className="h-6 w-px bg-neutral-300"></div>
+            <div>
+              <span className="text-2xl text-text-secondary">合計金額: </span>
+              <span className="text-2xl font-bold text-red-600">{formatJapaneseCurrency(filteredTotals.totalAmount)}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="mb-6 flex flex-col sm:flex-row gap-3 md:gap-4">
-        {/* Search */}
-        <div className="flex-1 relative min-w-0">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-secondary" />
-          <input
-            type="text"
-            placeholder="項目、支出先で検索..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-full pl-10 pr-4 py-2.5 md:py-2 border-2 border-neutral-200 rounded-[24px] focus:border-primary-500 focus:outline-none"
-          />
+        {/* Expense Category Filter - Multi-select */}
+        <div ref={expenseDropdownRef} className="relative w-full sm:w-auto">
+          <button
+            onClick={() => setIsExpenseDropdownOpen(!isExpenseDropdownOpen)}
+            className="w-full sm:w-[200px] px-4 py-2.5 md:py-2 border-2 border-neutral-200 rounded-[24px] focus:border-primary-500 focus:outline-none bg-white flex items-center gap-2"
+          >
+            <span className="flex-1 text-left truncate">
+              支出カテゴリー
+            </span>
+            <ChevronDown className="w-4 h-4 flex-shrink-0" />
+          </button>
+
+          {isExpenseDropdownOpen && (
+            <div className="absolute z-50 mt-2 w-full sm:min-w-[280px] bg-white border-2 border-neutral-200 rounded-[16px] shadow-lg max-w-[calc(100vw-2rem)] left-0 sm:left-auto">
+              <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
+                {/* Clear All */}
+                <div className="px-4 py-3 border-b border-neutral-200">
+                  <button
+                    onClick={clearExpenseCategoryFilter}
+                    className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                  >
+                    すべて解除
+                  </button>
+                </div>
+
+                {/* Category options */}
+                {expenseCategories.map((cat) => (
+                <label
+                  key={cat}
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 cursor-pointer"
+                >
+                  <div className="relative flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={expenseCategoryFilter.includes(cat)}
+                      onChange={() => toggleExpenseCategory(cat)}
+                      className="w-5 h-5 rounded border-2 border-neutral-300 text-primary-500 focus:ring-2 focus:ring-primary-500 cursor-pointer"
+                    />
+                    {expenseCategoryFilter.includes(cat) && (
+                      <Check className="w-4 h-4 text-white absolute left-0.5 top-0.5 pointer-events-none" />
+                    )}
+                  </div>
+                  <span className="text-sm text-text-primary">{cat}</span>
+                </label>
+              ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Income Category Filter - Multi-select */}
@@ -293,17 +361,13 @@ export default function TransactionTable({ transactions }: TransactionTableProps
             className="w-full sm:w-[200px] px-4 py-2.5 md:py-2 border-2 border-neutral-200 rounded-[24px] focus:border-primary-500 focus:outline-none bg-white flex items-center gap-2"
           >
             <span className="flex-1 text-left truncate">
-              {incomeCategoryFilter.length === 0
-                ? '収入カテゴリー'
-                : incomeCategoryFilter.length === 1
-                ? incomeCategoryFilter[0]
-                : `収入 ${incomeCategoryFilter.length}件選択中`}
+              収入カテゴリー
             </span>
             <ChevronDown className="w-4 h-4 flex-shrink-0" />
           </button>
 
           {isIncomeDropdownOpen && (
-            <div className="absolute z-10 mt-2 w-full sm:min-w-[280px] bg-white border-2 border-neutral-200 rounded-[16px] shadow-lg max-w-[calc(100vw-2rem)] left-0 sm:left-auto">
+            <div className="absolute z-50 mt-2 w-full sm:min-w-[280px] bg-white border-2 border-neutral-200 rounded-[16px] shadow-lg max-w-[calc(100vw-2rem)] left-0 sm:left-auto">
               <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
                 {/* Clear All */}
                 <div className="px-4 py-3 border-b border-neutral-200">
@@ -340,167 +404,108 @@ export default function TransactionTable({ transactions }: TransactionTableProps
           )}
         </div>
 
-        {/* Expense Category Filter - Multi-select */}
-        <div ref={expenseDropdownRef} className="relative w-full sm:w-auto">
-          <button
-            onClick={() => setIsExpenseDropdownOpen(!isExpenseDropdownOpen)}
-            className="w-full sm:w-[200px] px-4 py-2.5 md:py-2 border-2 border-neutral-200 rounded-[24px] focus:border-primary-500 focus:outline-none bg-white flex items-center gap-2"
-          >
-            <span className="flex-1 text-left truncate">
-              {expenseCategoryFilter.length === 0
-                ? '支出カテゴリー'
-                : expenseCategoryFilter.length === 1
-                ? expenseCategoryFilter[0]
-                : `支出 ${expenseCategoryFilter.length}件選択中`}
-            </span>
-            <ChevronDown className="w-4 h-4 flex-shrink-0" />
-          </button>
-
-          {isExpenseDropdownOpen && (
-            <div className="absolute z-10 mt-2 w-full sm:min-w-[280px] bg-white border-2 border-neutral-200 rounded-[16px] shadow-lg max-w-[calc(100vw-2rem)] left-0 sm:left-auto">
-              <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
-                {/* Clear All */}
-                <div className="px-4 py-3 border-b border-neutral-200">
-                  <button
-                    onClick={clearExpenseCategoryFilter}
-                    className="text-sm text-primary-600 hover:text-primary-700 font-medium"
-                  >
-                    すべて解除
-                  </button>
-                </div>
-
-                {/* Category options */}
-                {expenseCategories.map((cat) => (
-                <label
-                  key={cat}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 cursor-pointer"
-                >
-                  <div className="relative flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={expenseCategoryFilter.includes(cat)}
-                      onChange={() => toggleExpenseCategory(cat)}
-                      className="w-5 h-5 rounded border-2 border-neutral-300 text-primary-500 focus:ring-2 focus:ring-primary-500 cursor-pointer"
-                    />
-                    {expenseCategoryFilter.includes(cat) && (
-                      <Check className="w-4 h-4 text-white absolute left-0.5 top-0.5 pointer-events-none" />
-                    )}
-                  </div>
-                  <span className="text-sm text-text-primary">{cat}</span>
-                </label>
-              ))}
-              </div>
-            </div>
-          )}
+        {/* Search */}
+        <div className="flex-1 relative min-w-0">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-text-secondary" />
+          <input
+            type="text"
+            placeholder="項目、支出先で検索..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="w-full pl-10 pr-4 py-2.5 md:py-2 border-2 border-neutral-200 rounded-[24px] focus:border-primary-500 focus:outline-none"
+          />
         </div>
       </div>
 
-      {/* Pagination - Top */}
-      {shouldShowPagination && totalPages > 1 && (
-        <div className="mb-4">
-          <PaginationControls />
-        </div>
-      )}
-
-      {/* Table - with scroll indicator shadow */}
+      {/* Table - with scrollable container */}
       <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-        <div className="min-w-[600px]">
-        <table className="w-full">
-          <thead className="border-b-2 border-neutral-200">
-            <tr>
-              <th
-                className="text-left py-3 px-4 cursor-pointer hover:bg-neutral-50"
-                onClick={() => handleSort('date')}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-text-primary">日付</span>
-                  <SortIcon field="date" />
-                </div>
-              </th>
-              <th
-                className="text-left py-3 px-4 cursor-pointer hover:bg-neutral-50"
-                onClick={() => handleSort('category')}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-text-primary">カテゴリー</span>
-                  <SortIcon field="category" />
-                </div>
-              </th>
-              <th className="text-left py-3 px-4">
-                <span className="text-sm font-bold text-text-primary">項目</span>
-              </th>
-              <th
-                className="text-right py-3 px-4 cursor-pointer hover:bg-neutral-50"
-                onClick={() => handleSort('amount')}
-              >
-                <div className="flex items-center justify-end gap-2">
-                  <span className="text-sm font-bold text-text-primary">金額</span>
-                  <SortIcon field="amount" />
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayTransactions.map((transaction) => (
-              <tr
-                key={transaction.id}
-                className="border-b border-neutral-100 hover:bg-neutral-50"
-              >
-                <td className="py-3 px-4 text-sm text-text-secondary">
-                  {transaction.date}
-                </td>
-                <td className="py-3 px-4">
-                  <Badge
-                    color={transaction.type === 'income' ? '#64D8C6' : '#EF4444'}
-                  >
-                    {transaction.category}
-                  </Badge>
-                </td>
-                <td className="py-3 px-4">
-                  <p className="text-sm font-medium text-text-primary">
-                    {transaction.description}
-                  </p>
-                  {transaction.recipient && (
-                    <p className="text-xs text-text-secondary mt-1">
-                      {transaction.recipient}
-                    </p>
-                  )}
-                </td>
-                <td
-                  className={`py-3 px-4 text-right font-medium ${
-                    transaction.type === 'income'
-                      ? 'text-primary-600'
-                      : 'text-red-600'
-                  }`}
+        <div className="min-w-[600px] max-h-[720px] overflow-y-auto border-2 border-transparent rounded-[16px]">
+          <table className="w-full">
+            <thead className="sticky top-0 bg-white border-b-2 border-neutral-200 z-10">
+              <tr>
+                <th
+                  className="text-left py-3 px-4 cursor-pointer hover:bg-neutral-50"
+                  onClick={() => handleSort('date')}
                 >
-                  {transaction.type === 'income' ? '+' : '-'}
-                  {formatJapaneseCurrency(transaction.amount)}
-                </td>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-text-primary">日付</span>
+                    <SortIcon field="date" />
+                  </div>
+                </th>
+                <th
+                  className="text-left py-3 px-4 cursor-pointer hover:bg-neutral-50"
+                  onClick={() => handleSort('category')}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-text-primary">カテゴリー</span>
+                    <SortIcon field="category" />
+                  </div>
+                </th>
+                <th
+                  className="text-left py-3 px-4 cursor-pointer hover:bg-neutral-50"
+                  onClick={() => handleSort('description')}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-text-primary">項目</span>
+                    <SortIcon field="description" />
+                  </div>
+                </th>
+                <th
+                  className="text-right py-3 px-4 cursor-pointer hover:bg-neutral-50"
+                  onClick={() => handleSort('amount')}
+                >
+                  <div className="flex items-center justify-end gap-2">
+                    <span className="text-sm font-bold text-text-primary">金額</span>
+                    <SortIcon field="amount" />
+                  </div>
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredTransactions.map((transaction) => (
+                <tr
+                  key={transaction.id}
+                  className="border-b border-neutral-100 hover:bg-neutral-50"
+                >
+                  <td className="py-3 px-4 text-sm text-text-secondary">
+                    {transaction.date}
+                  </td>
+                  <td className="py-3 px-4">
+                    <Badge
+                      color={transaction.type === 'income' ? '#64D8C6' : '#EF4444'}
+                    >
+                      {transaction.category}
+                    </Badge>
+                  </td>
+                  <td className="py-3 px-4">
+                    <p className="text-sm font-medium text-text-primary">
+                      {transaction.description}
+                    </p>
+                    {transaction.recipient && (
+                      <p className="text-xs text-text-secondary mt-1">
+                        {transaction.recipient}
+                      </p>
+                    )}
+                  </td>
+                  <td
+                    className={`py-3 px-4 text-right font-medium ${
+                      transaction.type === 'income'
+                        ? 'text-primary-600'
+                        : 'text-red-600'
+                    }`}
+                  >
+                    {transaction.type === 'income' ? '+' : '-'}
+                    {formatJapaneseCurrency(transaction.amount)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-
-      {/* Show More Button - Only shown when not showing all and no active filters */}
-      {!hasActiveFilters && !showAll && filteredTransactions.length > initialDisplayCount && (
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => setShowAll(true)}
-            className="px-6 py-2 border-2 border-neutral-200 rounded-[24px] hover:border-primary-500 hover:bg-primary-50 transition-colors text-text-primary font-medium"
-          >
-            もっと見る
-          </button>
-        </div>
-      )}
-
-      {/* Pagination - Bottom */}
-      {shouldShowPagination && totalPages > 1 && (
-        <div className="mt-6">
-          <PaginationControls />
-        </div>
-      )}
     </Card>
   );
 }

@@ -1,17 +1,31 @@
 'use client';
 
-import { Transaction } from '@/lib/types';
+import { Transaction, CategoryBreakdown } from '@/lib/types';
 import { formatJapaneseCurrency } from '@/lib/calculations/aggregations';
 import Card from '../ui/Card';
 
 interface TopDonorsProps {
   transactions: Transaction[];
+  incomeCategories: CategoryBreakdown[];
 }
 
-export default function TopDonors({ transactions }: TopDonorsProps) {
+interface DonorData {
+  name: string;
+  amount: number;
+  category: string;
+  color: string;
+}
+
+export default function TopDonors({ transactions, incomeCategories }: TopDonorsProps) {
+  // Create a map of category names to colors
+  const categoryColorMap = new Map<string, string>();
+  incomeCategories.forEach((cat) => {
+    categoryColorMap.set(cat.category, cat.color);
+  });
+
   // Filter for income transactions and aggregate by organization (description field)
   // Exclude individual donations (個人からの寄付)
-  const donorMap = new Map<string, number>();
+  const donorMap = new Map<string, { amount: number; category: string; color: string }>();
 
   transactions
     .filter((t) => t.type === 'income' && t.description && t.category !== '個人からの寄付' && t.category !== '個人からの寄附')
@@ -20,13 +34,22 @@ export default function TopDonors({ transactions }: TopDonorsProps) {
       const organization = t.description.trim();
       if (!organization) return;
 
-      const currentAmount = donorMap.get(organization) || 0;
-      donorMap.set(organization, currentAmount + t.amount);
+      const existing = donorMap.get(organization);
+      if (existing) {
+        existing.amount += t.amount;
+      } else {
+        const color = categoryColorMap.get(t.category) || '#64B5A6'; // Use category color or default
+        donorMap.set(organization, {
+          amount: t.amount,
+          category: t.category,
+          color: color,
+        });
+      }
     });
 
   // Convert to array and sort by amount
   const allDonors = Array.from(donorMap.entries())
-    .map(([name, amount]) => ({ name, amount }))
+    .map(([name, data]) => ({ name, amount: data.amount, category: data.category, color: data.color }))
     .sort((a, b) => b.amount - a.amount);
 
   // Get top 30, but include all donors with the same amount as the 30th donor
@@ -72,7 +95,10 @@ export default function TopDonors({ transactions }: TopDonorsProps) {
             className="flex items-center justify-between p-2.5 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors"
           >
             <div className="flex items-center gap-2.5">
-              <div className="flex-shrink-0 w-6 h-6 bg-primary-500 text-white rounded-full flex items-center justify-center font-bold text-xs">
+              <div
+                className="flex-shrink-0 w-6 h-6 text-white rounded-full flex items-center justify-center font-bold text-xs"
+                style={{ backgroundColor: donor.color }}
+              >
                 {getRanking(index, donor.amount)}
               </div>
               <p className="font-medium text-text-primary text-sm line-clamp-2">{donor.name}</p>

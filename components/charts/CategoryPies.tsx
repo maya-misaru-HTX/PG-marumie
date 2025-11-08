@@ -100,7 +100,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
         fill={textColor}
         textAnchor="middle"
         dominantBaseline="central"
-        className="text-sm font-bold"
+        className="text-base font-bold"
       >
         {`${Math.round(percent * 100)}%`}
       </text>
@@ -111,13 +111,13 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
     <div>
       {/* Income Pie */}
       <Card>
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-text-primary">🚪 お金の入り口</h2>
+        <div className="mb-4">
+          <h2 className="text-lg font-bold text-text-primary">🚪 お金の入り口</h2>
         </div>
 
         {income.categories.length > 0 ? (
           <>
-            <ResponsiveContainer width="100%" height={320}>
+            <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
                   data={incomeData}
@@ -125,7 +125,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
                   cy="50%"
                   labelLine={false}
                   label={renderCustomizedLabel(incomeData)}
-                  outerRadius={125}
+                  outerRadius={120}
                   fill="#8884d8"
                   dataKey="amount"
                   startAngle={90}
@@ -146,7 +146,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
               </PieChart>
             </ResponsiveContainer>
 
-            <div className="mt-8 space-y-4">
+            <div className="mt-[34px] space-y-3 pb-4">
               {incomeData.map((cat) => (
                 <div key={cat.category} className="flex items-center justify-between text-base">
                   <div className="flex items-center gap-2.5">
