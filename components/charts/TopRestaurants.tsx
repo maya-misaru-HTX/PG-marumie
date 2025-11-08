@@ -86,28 +86,28 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
   const RestaurantCard = ({ restaurant, index, isSpending }: { restaurant: RestaurantData; index: number; isSpending: boolean }) => {
     const cardContent = (
       <>
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
           <div
-            className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm text-white shadow-md"
+            className="flex-shrink-0 w-5 h-5 sm:w-7 sm:h-7 md:w-9 md:h-9 rounded-full flex items-center justify-center font-bold text-[10px] sm:text-xs md:text-sm text-white shadow-md"
             style={{
               background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)'
             }}
           >
             {index + 1}
           </div>
-          <span className="font-extrabold text-red-600 text-2xl tracking-tight">
+          <span className="font-extrabold text-red-600 text-xs sm:text-base md:text-2xl tracking-tight leading-none">
             {isSpending ? formatJapaneseCurrency(restaurant.totalAmount) : `${restaurant.count}回`}
           </span>
         </div>
-        <div className="mb-4">
-          <p className="font-bold text-text-primary text-base leading-tight">{restaurant.name}</p>
+        <div className="mb-1 sm:mb-2 flex-1 flex flex-col justify-center overflow-hidden">
+          <p className="font-bold text-text-primary text-[10px] sm:text-xs md:text-base leading-tight mb-0.5 truncate">{restaurant.name}</p>
+          <p className="text-[8px] sm:text-[10px] md:text-xs text-text-secondary font-medium leading-tight break-words">
+            {restaurant.genre || '高級料理'}
+          </p>
         </div>
         <div className="mt-auto">
-          {restaurant.genre && (
-            <p className="text-xs text-black mb-1">{restaurant.genre}</p>
-          )}
-          <div className="pt-2 border-t border-neutral-200/50">
-            <span className="text-xs text-text-secondary font-medium">
+          <div className="pt-1 border-t border-neutral-200/50">
+            <span className="text-[8px] sm:text-[9px] md:text-xs text-text-secondary font-medium block">
               {isSpending ? (
                 <>利用回数: <span className="font-bold text-text-primary">{restaurant.count}回</span></>
               ) : (
@@ -119,7 +119,7 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
       </>
     );
 
-    const className = "relative flex flex-col p-5 rounded-2xl bg-gradient-to-br from-white to-neutral-50 backdrop-blur-sm hover:shadow-lg hover:scale-105 transition-all duration-300 border border-white/50 shadow-md flex-shrink-0 w-[190px]";
+    const className = "relative flex flex-col p-2 sm:p-3 md:p-5 rounded-2xl bg-gradient-to-br from-white to-neutral-50 backdrop-blur-sm hover:shadow-lg hover:scale-105 transition-all duration-300 border border-white/50 hover:border-red-300 shadow-md flex-shrink-0 w-[100px] h-[100px] sm:w-[140px] sm:h-[140px] md:w-[190px] md:h-[190px]";
     const style = { boxShadow: '0 4px 18px rgba(0, 0, 0, 0.08)' };
 
     if (restaurant.url) {
@@ -151,22 +151,12 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
   return (
     <Card>
       <div className="mb-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <h2 className="text-xl md:text-2xl font-bold text-text-primary whitespace-nowrap">✨ お気に入りの高級レストラン</h2>
-            <div className="flex items-center gap-4 text-xl md:text-2xl">
-              <span className="text-text-secondary whitespace-nowrap">件数: <span className="font-bold text-text-primary">{totalTransactions}件</span></span>
-              <span className="text-text-secondary whitespace-nowrap">合計金額: <span className="font-bold text-red-600">{formatJapaneseCurrency(totalAmount)}</span></span>
-            </div>
+        <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+          <h2 className="text-sm md:text-xl lg:text-2xl font-bold text-text-primary whitespace-nowrap">✨ お気に入りの高級レストラン</h2>
+          <div className="flex items-center gap-3 md:gap-4 text-sm md:text-xl lg:text-2xl">
+            <span className="text-text-secondary whitespace-nowrap">件数: <span className="font-bold text-text-primary">{totalTransactions}件</span></span>
+            <span className="text-text-secondary whitespace-nowrap">合計金額: <span className="font-bold text-red-600">{formatJapaneseCurrency(totalAmount)}</span></span>
           </div>
-          <a
-            href="https://tabelog.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-medium text-red-600 hover:text-red-700 hover:underline whitespace-nowrap"
-          >
-            🔍 食べログで調べる!
-          </a>
         </div>
       </div>
 
@@ -176,7 +166,7 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
           onClick={() => setSpendingExpanded(!spendingExpanded)}
           className="w-full flex items-center justify-between py-4 border-b-2 border-neutral-200 hover:border-red-300 transition-all mb-6 group"
         >
-          <span className="text-lg text-text-primary group-hover:text-red-600 transition-colors">支払額トップ10</span>
+          <span className="text-sm md:text-base lg:text-lg text-text-primary group-hover:text-red-600 transition-colors">→ 支払額トップ10</span>
           {spendingExpanded ? (
             <ChevronUp className="w-5 h-5 text-text-secondary group-hover:text-red-600 transition-colors" />
           ) : (
@@ -185,8 +175,8 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
         </button>
 
         {spendingExpanded && (
-          <div className="overflow-x-auto pb-4 -mx-4 px-4">
-            <div className="flex gap-4 min-w-min">
+          <div className="overflow-x-auto pb-4 -mx-1 px-1">
+            <div className="flex gap-4 min-w-min py-2">
               {topBySpending.map((restaurant, index) => (
                 <RestaurantCard key={restaurant.name} restaurant={restaurant} index={index} isSpending={true} />
               ))}
@@ -201,7 +191,7 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
           onClick={() => setVisitsExpanded(!visitsExpanded)}
           className="w-full flex items-center justify-between py-4 border-b-2 border-neutral-200 hover:border-red-300 transition-all mb-6 group"
         >
-          <span className="text-lg text-text-primary group-hover:text-red-600 transition-colors">来店数トップ10</span>
+          <span className="text-sm md:text-base lg:text-lg text-text-primary group-hover:text-red-600 transition-colors">→ 来店数トップ10</span>
           {visitsExpanded ? (
             <ChevronUp className="w-5 h-5 text-text-secondary group-hover:text-red-600 transition-colors" />
           ) : (
@@ -210,8 +200,8 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
         </button>
 
         {visitsExpanded && (
-          <div className="overflow-x-auto pb-4 -mx-4 px-4">
-            <div className="flex gap-4 min-w-min">
+          <div className="overflow-x-auto pb-4 -mx-1 px-1">
+            <div className="flex gap-4 min-w-min py-2">
               {topByVisits.map((restaurant, index) => (
                 <RestaurantCard key={restaurant.name} restaurant={restaurant} index={index} isSpending={false} />
               ))}

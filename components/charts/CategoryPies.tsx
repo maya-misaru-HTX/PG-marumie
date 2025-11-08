@@ -111,13 +111,44 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
     <div>
       {/* Income Pie */}
       <Card>
-        <div className="mb-4">
-          <h2 className="text-lg font-bold text-text-primary">🚪 お金の入り口</h2>
+        <div className="mb-3 md:mb-4">
+          <h2 className="text-sm md:text-xl lg:text-2xl font-bold text-text-primary whitespace-nowrap">🚪 お金の入り口</h2>
         </div>
 
         {income.categories.length > 0 ? (
           <>
-            <ResponsiveContainer width="100%" height={280}>
+            {/* Mobile version */}
+            <ResponsiveContainer width="100%" height={220} className="md:hidden">
+              <PieChart>
+                <Pie
+                  data={incomeData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={renderCustomizedLabel(incomeData)}
+                  outerRadius={90}
+                  fill="#8884d8"
+                  dataKey="amount"
+                  startAngle={90}
+                  endAngle={-270}
+                >
+                  {incomeData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(value: number) => formatJapaneseCurrency(value)}
+                  contentStyle={{
+                    backgroundColor: 'white',
+                    border: '1px solid #E5E7EB',
+                    borderRadius: '8px',
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+
+            {/* Desktop version */}
+            <ResponsiveContainer width="100%" height={280} className="hidden md:block">
               <PieChart>
                 <Pie
                   data={incomeData}
@@ -146,25 +177,25 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
               </PieChart>
             </ResponsiveContainer>
 
-            <div className="mt-[34px] space-y-3 pb-4">
+            <div className="mt-4 md:mt-[34px] space-y-2 md:space-y-3 pb-2 md:pb-4">
               {incomeData.map((cat) => (
-                <div key={cat.category} className="flex items-center justify-between text-base">
-                  <div className="flex items-center gap-2.5">
+                <div key={cat.category} className="flex items-center justify-between text-xs md:text-base">
+                  <div className="flex items-center gap-1.5 md:gap-2.5">
                     <div
-                      className="w-3.5 h-3.5 rounded-full"
+                      className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 rounded-full flex-shrink-0"
                       style={{ backgroundColor: cat.color }}
                     />
                     <span className="text-text-primary">{cat.category}</span>
                   </div>
-                  <span className="font-medium text-text-secondary">
-                    {formatPercentage(cat.percentage)} ({formatJapaneseCurrency(cat.amount)})
+                  <span className="font-medium text-text-secondary whitespace-nowrap ml-2">
+                    {formatJapaneseCurrency(cat.amount)}
                   </span>
                 </div>
               ))}
             </div>
           </>
         ) : (
-          <p className="text-center text-text-secondary py-12">収入データがありません</p>
+          <p className="text-center text-text-secondary py-8 md:py-12 text-sm md:text-base">収入データがありません</p>
         )}
       </Card>
     </div>

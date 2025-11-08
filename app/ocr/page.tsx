@@ -12,7 +12,7 @@ const PdfPromptGenerator = dynamic(
 export default function OcrPage() {
   return (
     <div className="min-h-screen bg-neutral-50 py-12 px-4 md:px-8">
-      <div className="max-w-[1032px] mx-auto">
+      <div className="max-w-[826px] mx-auto">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors mb-6"

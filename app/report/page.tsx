@@ -38,7 +38,7 @@ function ReportContent() {
   if (error) {
     return (
       <div className="min-h-screen bg-neutral-50 py-12 px-4">
-        <div className="max-w-[1032px] mx-auto text-center">
+        <div className="max-w-[826px] mx-auto text-center">
           <div className="bg-white rounded-[22px] border border-black p-12">
             <h1 className="text-2xl font-bold text-text-primary mb-4">エラー</h1>
             <p className="text-text-secondary mb-8">{error}</p>
@@ -66,23 +66,23 @@ function ReportContent() {
     <div className="min-h-screen bg-neutral-50">
       {/* Sticky Header */}
       <div className="sticky top-0 z-50 bg-white border-b-2 border-neutral-200 shadow-sm">
-        <div className="max-w-[1032px] mx-auto px-4 md:px-8 py-4">
-          <div className="flex items-center justify-between gap-4">
+        <div className="max-w-[826px] mx-auto px-[50px] py-3 md:py-4">
+          <div className="flex items-center justify-between gap-2 md:gap-4">
             {/* Left: Back Button and Politician Info */}
-            <div className="flex items-center gap-4 flex-shrink-0">
+            <div className="flex items-center gap-2 md:gap-4 flex-shrink-0 min-w-0">
               <button
                 onClick={() => router.push('/')}
-                className="flex items-center gap-1.5 text-sm text-text-primary hover:text-primary-600 transition-colors whitespace-nowrap -ml-[30px] font-medium"
+                className="flex items-center gap-1 md:gap-1.5 text-xs md:text-sm text-text-primary hover:text-primary-600 transition-colors whitespace-nowrap -ml-[15px] md:-ml-[30px] font-medium"
               >
-                <ArrowLeft className="w-4 h-4" />
-                戻る
+                <ArrowLeft className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden sm:inline">戻る</span>
               </button>
 
-              <div className="flex items-baseline gap-3 ml-5">
-                <h1 className="text-xl md:text-2xl font-bold text-text-primary whitespace-nowrap">
+              <div className="flex flex-col sm:flex-row sm:items-baseline gap-0 sm:gap-3 ml-2 md:ml-5 min-w-0">
+                <h1 className="text-base md:text-xl lg:text-2xl font-bold text-text-primary truncate">
                   {report.politician.name}
                 </h1>
-                <p className="text-sm md:text-base text-text-secondary whitespace-nowrap">
+                <p className="text-xs md:text-sm lg:text-base text-text-secondary truncate">
                   {report.politician.organization} ({report.politician.fiscalYear}年度)
                 </p>
               </div>
@@ -97,8 +97,8 @@ function ReportContent() {
       </div>
 
       {/* Content Sections */}
-      <div className="px-4 md:px-8 py-8">
-        <div className="max-w-[1032px] mx-auto space-y-8">
+      <div className="px-[50px] py-4 md:py-8">
+        <div className="max-w-[826px] mx-auto space-y-4 md:space-y-8">
 
           {/* Summary Cards */}
           <SummaryCards summary={report.summary} />

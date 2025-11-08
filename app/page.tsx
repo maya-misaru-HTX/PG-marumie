@@ -45,8 +45,8 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-6 px-4 md:py-12 md:px-8">
-      <div className="max-w-[1032px] mx-auto space-y-6 md:space-y-12">
+    <div className="min-h-screen bg-neutral-50 py-6 px-[50px] md:py-12">
+      <div className="max-w-[826px] mx-auto space-y-6 md:space-y-12">
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl md:text-4xl font-bold text-text-primary">
@@ -72,7 +72,7 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <Upload className="w-5 h-5 text-primary-600" />
               <span className="font-semibold text-text-primary">
-                他の政治家のデータをアップロード
+                他の政治家をチェック
               </span>
             </div>
             {showUpload ? (

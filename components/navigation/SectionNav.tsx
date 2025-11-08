@@ -69,7 +69,7 @@ export default function SectionNav() {
             key={item.id}
             onClick={() => scrollToSection(item.id)}
             className={`
-              px-4 py-2 rounded-[24px] whitespace-nowrap font-medium text-sm transition-colors
+              px-2 py-1.5 md:px-4 md:py-2 rounded-[24px] whitespace-nowrap font-medium text-xs md:text-sm transition-colors
               ${
                 isActive && isRestaurant
                   ? 'bg-red-500 text-white'

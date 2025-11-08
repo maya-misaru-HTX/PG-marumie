@@ -77,12 +77,12 @@ export default function TopDonors({ transactions, incomeCategories }: TopDonorsP
   return (
     <Card>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-text-primary">💰 収入トップ30</h2>
+        <h2 className="text-sm md:text-xl lg:text-2xl font-bold text-text-primary whitespace-nowrap">💰 収入トップ30</h2>
         <a
           href="https://political-finance-database.com/"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline whitespace-nowrap"
+          className="text-[10px] sm:text-xs md:text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline whitespace-nowrap flex-shrink-0"
         >
           🔍 正体を詳しく調べる！
         </a>
@@ -96,14 +96,14 @@ export default function TopDonors({ transactions, incomeCategories }: TopDonorsP
           >
             <div className="flex items-center gap-2.5">
               <div
-                className="flex-shrink-0 w-6 h-6 text-white rounded-full flex items-center justify-center font-bold text-xs"
+                className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 text-white rounded-full flex items-center justify-center font-bold text-[10px] md:text-xs"
                 style={{ backgroundColor: donor.color }}
               >
                 {getRanking(index, donor.amount)}
               </div>
-              <p className="font-medium text-text-primary text-sm line-clamp-2">{donor.name}</p>
+              <p className="font-medium text-text-primary text-xs md:text-sm line-clamp-2">{donor.name}</p>
             </div>
-            <p className="font-bold text-primary-600 text-sm whitespace-nowrap ml-2">{formatJapaneseCurrency(donor.amount)}</p>
+            <p className="font-bold text-primary-600 text-xs md:text-sm whitespace-nowrap ml-2">{formatJapaneseCurrency(donor.amount)}</p>
           </div>
         ))}
       </div>

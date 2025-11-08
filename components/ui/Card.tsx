@@ -10,7 +10,7 @@ export default function Card({ children, className = '', hover = false }: CardPr
   return (
     <div
       className={`
-        bg-white rounded-[16px] md:rounded-[22px] border border-transparent p-4 md:p-6
+        bg-white rounded-[16px] md:rounded-[22px] border border-transparent p-4 md:p-6 overflow-hidden
         ${hover ? 'hover:bg-neutral-50 transition-colors cursor-pointer' : ''}
         ${className}
       `}
