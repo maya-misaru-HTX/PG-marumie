@@ -151,8 +151,14 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
   return (
     <Card>
       <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xl md:text-2xl font-bold text-text-primary">✨ 御用達の高級レストラン</h2>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl md:text-2xl font-bold text-text-primary whitespace-nowrap">✨ お気に入りの高級レストラン</h2>
+            <div className="flex items-center gap-4 text-xl md:text-2xl">
+              <span className="text-text-secondary whitespace-nowrap">件数: <span className="font-bold text-text-primary">{totalTransactions}件</span></span>
+              <span className="text-text-secondary whitespace-nowrap">合計金額: <span className="font-bold text-red-600">{formatJapaneseCurrency(totalAmount)}</span></span>
+            </div>
+          </div>
           <a
             href="https://tabelog.com"
             target="_blank"
@@ -162,10 +168,6 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
             🔍 食べログで調べる!
           </a>
         </div>
-        <div className="flex items-center gap-6 text-xl">
-          <span className="text-text-secondary">件数: <span className="font-bold text-text-primary">{totalTransactions}件</span></span>
-          <span className="text-text-secondary">合計金額: <span className="font-bold text-red-600">{formatJapaneseCurrency(totalAmount)}</span></span>
-        </div>
       </div>
 
       {/* Total Spending Ranking */}
@@ -174,7 +176,7 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
           onClick={() => setSpendingExpanded(!spendingExpanded)}
           className="w-full flex items-center justify-between py-4 border-b-2 border-neutral-200 hover:border-red-300 transition-all mb-6 group"
         >
-          <span className="text-lg text-text-primary group-hover:text-red-600 transition-colors">総支払額ランキング</span>
+          <span className="text-lg text-text-primary group-hover:text-red-600 transition-colors">支払額トップ10</span>
           {spendingExpanded ? (
             <ChevronUp className="w-5 h-5 text-text-secondary group-hover:text-red-600 transition-colors" />
           ) : (
@@ -199,7 +201,7 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
           onClick={() => setVisitsExpanded(!visitsExpanded)}
           className="w-full flex items-center justify-between py-4 border-b-2 border-neutral-200 hover:border-red-300 transition-all mb-6 group"
         >
-          <span className="text-lg text-text-primary group-hover:text-red-600 transition-colors">利用回数ランキング</span>
+          <span className="text-lg text-text-primary group-hover:text-red-600 transition-colors">来店数トップ10</span>
           {visitsExpanded ? (
             <ChevronUp className="w-5 h-5 text-text-secondary group-hover:text-red-600 transition-colors" />
           ) : (

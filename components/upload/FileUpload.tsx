@@ -93,15 +93,6 @@ export default function FileUpload({ onReportLoaded }: FileUploadProps) {
 
   return (
     <Card>
-      <div className="text-center mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-text-primary mb-2 md:mb-4">
-          贅沢まる見え君🔍
-        </h1>
-        <p className="text-text-secondary text-sm md:text-base lg:text-lg">
-          政治家の収支報告書データを可視化します
-        </p>
-      </div>
-
       <div
         className={`
           border-2 border-dashed rounded-[16px] md:rounded-[22px] p-4 md:p-6 text-center transition-all

@@ -16,8 +16,8 @@ type SortDirection = 'asc' | 'desc';
 
 export default function TransactionTable({ transactions }: TransactionTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [incomeCategoryFilter, setIncomeCategoryFilter] = useState<string[]>(['セルフ寄付（隠蔽型）']);
-  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState<string[]>(['セルフ寄付（隠蔽型）']);
+  const [incomeCategoryFilter, setIncomeCategoryFilter] = useState<string[]>(['セルフ寄付（隠蔽型‼️）']);
+  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState<string[]>(['セルフ寄付（隠蔽型‼️）']);
   const [isIncomeDropdownOpen, setIsIncomeDropdownOpen] = useState(false);
   const [isExpenseDropdownOpen, setIsExpenseDropdownOpen] = useState(false);
   const [sortField, setSortField] = useState<SortField>('amount');
