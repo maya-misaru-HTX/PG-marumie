@@ -29,13 +29,13 @@ export default function TopDonors({ transactions }: TopDonorsProps) {
     .map(([name, amount]) => ({ name, amount }))
     .sort((a, b) => b.amount - a.amount);
 
-  // Get top 10, but include all donors with the same amount as the 10th donor
-  let topDonors = allDonors.slice(0, 10);
+  // Get top 30, but include all donors with the same amount as the 30th donor
+  let topDonors = allDonors.slice(0, 30);
 
-  if (allDonors.length > 10) {
-    const tenthAmount = allDonors[9].amount;
-    // Find all donors with the same amount as the 10th donor
-    const additionalDonors = allDonors.slice(10).filter(d => d.amount === tenthAmount);
+  if (allDonors.length > 30) {
+    const thirtiethAmount = allDonors[29].amount;
+    // Find all donors with the same amount as the 30th donor
+    const additionalDonors = allDonors.slice(30).filter(d => d.amount === thirtiethAmount);
     topDonors = [...topDonors, ...additionalDonors];
   }
 
@@ -45,16 +45,16 @@ export default function TopDonors({ transactions }: TopDonorsProps) {
 
   // Calculate ranking labels (handle ties)
   const getRanking = (index: number, amount: number): number => {
-    if (index < 9) return index + 1;
-    // For 10th place and beyond, check if tied with 10th
-    const tenthAmount = allDonors[9].amount;
-    return amount === tenthAmount ? 10 : index + 1;
+    if (index < 29) return index + 1;
+    // For 30th place and beyond, check if tied with 30th
+    const thirtiethAmount = allDonors[29].amount;
+    return amount === thirtiethAmount ? 30 : index + 1;
   };
 
   return (
     <Card>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-text-primary">💰 寄付団体トップ10</h2>
+        <h2 className="text-lg font-bold text-text-primary">💰 収入トップ30</h2>
         <a
           href="https://political-finance-database.com/"
           target="_blank"
@@ -65,7 +65,7 @@ export default function TopDonors({ transactions }: TopDonorsProps) {
         </a>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-300 scrollbar-track-neutral-100 hover:scrollbar-thumb-neutral-400">
         {topDonors.map((donor, index) => (
           <div
             key={donor.name}
