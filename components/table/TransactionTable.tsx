@@ -452,7 +452,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
             <thead className="sticky top-0 bg-white border-b-2 border-neutral-200 z-10">
               <tr>
                 <th
-                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50"
+                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[30%] md:w-auto"
                   onClick={() => handleSort('description')}
                 >
                   <div className="flex items-center gap-1 md:gap-2">
@@ -461,7 +461,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   </div>
                 </th>
                 <th
-                  className="text-right py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50"
+                  className="text-right py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[25%] md:w-auto"
                   onClick={() => handleSort('amount')}
                 >
                   <div className="flex items-center justify-end gap-1 md:gap-2">
@@ -470,7 +470,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   </div>
                 </th>
                 <th
-                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50"
+                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[30%] md:w-auto"
                   onClick={() => handleSort('category')}
                 >
                   <div className="flex items-center gap-1 md:gap-2">
@@ -479,7 +479,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   </div>
                 </th>
                 <th
-                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50"
+                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[15%] md:w-auto"
                   onClick={() => handleSort('date')}
                 >
                   <div className="flex items-center gap-1 md:gap-2">
