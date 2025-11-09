@@ -3,6 +3,7 @@
 import { Transaction } from '@/lib/types';
 import { formatJapaneseCurrency } from '@/lib/calculations/aggregations';
 import Card from '../ui/Card';
+import { Upload } from 'lucide-react';
 
 interface TopRestaurantsProps {
   transactions: Transaction[];
@@ -18,6 +19,21 @@ interface RestaurantData {
 }
 
 export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
+  // Predefined images for specific restaurants
+  const predefinedImages: { [key: string]: string } = {
+    '東京重よし': '/images/Shigeyoshi.png',
+    '波むら': '/images/Hamura.png',
+    '銀座ヒラヤマ': '/images/hirayama.png',
+    '一宝東京店': '/images/Ippou.png',
+    'たいや': '/images/taiya.png',
+    'たい家': '/images/taiya.png',
+    'キャンティ': '/images/chianti.png',
+    'チェント': '/images/chianti.png',
+    '永田町天竹': '/images/fugu.png',
+    '割烹味岡': '/images/ajioka.png',
+    '西洋料理東洋軒': '/images/toyo.png',
+    '東京吉兆銀座店': '/images/kicho.png',
+  };
 
   // Filter for restaurant expenses and aggregate by restaurant name
   const restaurantMap = new Map<string, RestaurantData>();
@@ -76,51 +92,60 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
 
   const RestaurantRow = ({ restaurant, index, isSpending }: { restaurant: RestaurantData; index: number; isSpending: boolean }) => {
     const isTop1 = index === 0;
+    const restaurantImage = predefinedImages[restaurant.name];
 
     const content = (
-      <div className={`flex items-center justify-between p-2.5 rounded-lg transition-all ${
-        isTop1
-          ? 'bg-gradient-to-br from-red-50/80 to-white/80 backdrop-blur-sm border border-red-200/50 shadow-lg'
-          : 'bg-gradient-to-br from-white/60 to-neutral-50/60 backdrop-blur-sm border border-neutral-200/50 hover:shadow-md'
-      }`}>
-        <div className="flex items-center gap-2 md:gap-2.5 min-w-0">
+      <div className="p-3 pb-0 rounded-lg transition-all h-full bg-gradient-to-br from-red-50/80 to-white/80 backdrop-blur-sm border border-red-200/50 hover:shadow-lg hover:border-red-300/60 flex flex-col">
+        {/* Top section: Ranking badge + Restaurant info */}
+        <div className="flex items-start gap-2 mb-2">
           <div
-            className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 text-white rounded-full flex items-center justify-center font-bold text-[10px] md:text-xs"
+            className="flex-shrink-0 w-7 h-7 text-white rounded-full flex items-center justify-center font-bold text-sm"
             style={{ background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)' }}
           >
             {index + 1}
           </div>
-          <p className={`font-medium text-[10px] md:text-sm min-w-0 ${isTop1 ? 'font-bold text-text-primary' : 'text-text-primary'}`}>
-            {restaurant.name}
-            <span className="text-text-secondary font-normal">（{restaurant.genre || '高級料理'}）</span>
-          </p>
+
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-[0.825rem] leading-tight mb-1 text-text-primary truncate">
+              {restaurant.name}
+            </p>
+            <p className="text-[10px] text-text-secondary mb-2 truncate">
+              {restaurant.genre || '高級料理'}
+            </p>
+            <div className="flex items-center gap-2">
+              <p className="font-bold text-xs text-red-600">
+                {formatJapaneseCurrency(restaurant.totalAmount)}
+              </p>
+              <p className="text-[10px] text-text-primary">
+                {restaurant.count}回
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col items-end ml-1 md:ml-2">
-          <p className={`font-bold text-[10px] md:text-sm whitespace-nowrap ${isTop1 ? 'text-red-700' : 'text-red-600'}`}>
-            {formatJapaneseCurrency(restaurant.totalAmount)}
-          </p>
-          <p className="text-[8px] md:text-xs text-text-secondary whitespace-nowrap">
-            {restaurant.count}回
-          </p>
+
+        {/* Image display */}
+        <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-neutral-100 border border-neutral-200">
+          {restaurantImage ? (
+            <img src={restaurantImage} alt={restaurant.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center">
+              <Upload className="w-6 h-6 text-neutral-400" />
+              <span className="text-xs text-neutral-400 mt-2">画像なし</span>
+            </div>
+          )}
         </div>
       </div>
     );
 
     if (restaurant.url) {
       return (
-        <a
-          key={restaurant.name}
-          href={restaurant.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block"
-        >
+        <div key={restaurant.name} onClick={() => window.open(restaurant.url, '_blank')} className="cursor-pointer h-full">
           {content}
-        </a>
+        </div>
       );
     }
 
-    return <div key={restaurant.name}>{content}</div>;
+    return <div key={restaurant.name} className="h-full">{content}</div>;
   };
 
   return (
@@ -135,10 +160,12 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
         </div>
       </div>
 
-      {/* Total Spending Ranking */}
-      <div className="space-y-2 max-h-[165px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-300 scrollbar-track-neutral-100 hover:scrollbar-thumb-neutral-400">
+      {/* Total Spending Ranking - Horizontal Gallery */}
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-neutral-300 scrollbar-track-neutral-100 hover:scrollbar-thumb-neutral-400">
         {topBySpending.map((restaurant, index) => (
-          <RestaurantRow key={restaurant.name} restaurant={restaurant} index={index} isSpending={true} />
+          <div key={restaurant.name} className="flex-shrink-0 w-[160px] md:w-[180px] h-[230px] md:h-[250px]">
+            <RestaurantRow restaurant={restaurant} index={index} isSpending={true} />
+          </div>
         ))}
       </div>
     </Card>

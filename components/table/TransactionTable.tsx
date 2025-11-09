@@ -479,7 +479,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
 
       {/* Table - with scrollable container */}
       <div className="overflow-x-auto">
-        <div className="min-w-[540px] max-h-[720px] overflow-y-auto border-2 border-transparent rounded-[16px]">
+        <div className="min-w-[540px] max-h-[480px] overflow-y-auto border-2 border-transparent rounded-[16px]">
           <table className="w-full md:table-auto">
             <thead className="sticky top-0 bg-white border-b-2 border-neutral-200 z-10">
               <tr>
