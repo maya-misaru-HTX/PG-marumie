@@ -218,7 +218,7 @@ function ReportContent() {
                       return (
                         <button
                           onClick={() => setShowMBTIDetails(!showMBTIDetails)}
-                          className="px-3 py-1.5 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 cursor-pointer font-semibold text-xs"
+                          className="px-3 py-1.5 md:px-5 md:py-2.5 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 md:gap-2 cursor-pointer font-semibold text-xs md:text-sm"
                           style={{
                             backgroundColor: colors.bg,
                             borderWidth: '2px',
@@ -228,7 +228,7 @@ function ReportContent() {
                           }}
                         >
                           <span>{mbtiDetails.typeName}（{hereditaryLabel}）</span>
-                          {showMBTIDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          {showMBTIDetails ? <ChevronUp className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <ChevronDown className="w-3.5 h-3.5 md:w-5 md:h-5" />}
                         </button>
                       );
                     })()}
@@ -393,7 +393,7 @@ function ReportContent() {
                           return (
                             <button
                               onClick={() => setShowMBTIDetails(!showMBTIDetails)}
-                              className="px-3 py-1.5 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 cursor-pointer font-semibold text-xs"
+                              className="px-3 py-1.5 md:px-5 md:py-2.5 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 md:gap-2 cursor-pointer font-semibold text-xs md:text-sm"
                               style={{
                                 backgroundColor: colors.bg,
                                 borderWidth: '2px',
@@ -403,7 +403,7 @@ function ReportContent() {
                               }}
                             >
                               <span>{mbtiDetails.typeName}</span>
-                              {showMBTIDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                              {showMBTIDetails ? <ChevronUp className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <ChevronDown className="w-3.5 h-3.5 md:w-5 md:h-5" />}
                             </button>
                           );
                         })()}
@@ -562,7 +562,7 @@ function ReportContent() {
                       return (
                         <button
                           onClick={() => setShowMBTIDetails(!showMBTIDetails)}
-                          className="px-3 py-1.5 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 cursor-pointer font-semibold text-xs"
+                          className="px-3 py-1.5 md:px-5 md:py-2.5 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 md:gap-2 cursor-pointer font-semibold text-xs md:text-sm"
                           style={{
                             backgroundColor: colors.bg,
                             borderWidth: '2px',
@@ -572,7 +572,7 @@ function ReportContent() {
                           }}
                         >
                           <span>{mbtiDetails.typeName}（{hereditaryLabel}）</span>
-                          {showMBTIDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          {showMBTIDetails ? <ChevronUp className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <ChevronDown className="w-3.5 h-3.5 md:w-5 md:h-5" />}
                         </button>
                       );
                     })()}
@@ -728,7 +728,7 @@ function ReportContent() {
                       return (
                         <button
                           onClick={() => setShowMBTIDetails(!showMBTIDetails)}
-                          className="px-3 py-1.5 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 cursor-pointer font-semibold text-xs"
+                          className="px-3 py-1.5 md:px-5 md:py-2.5 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 md:gap-2 cursor-pointer font-semibold text-xs md:text-sm"
                           style={{
                             backgroundColor: colors.bg,
                             borderWidth: '2px',
@@ -738,7 +738,7 @@ function ReportContent() {
                           }}
                         >
                           <span>{mbtiDetails.typeName}</span>
-                          {showMBTIDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          {showMBTIDetails ? <ChevronUp className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <ChevronDown className="w-3.5 h-3.5 md:w-5 md:h-5" />}
                         </button>
                       );
                     })()}
