@@ -127,11 +127,12 @@ export default function PoliticianRadarChart({ transactions, summary }: Politici
 
   const metrics = calculateMetrics();
 
-  // Prepare data for radar chart (cap display values at 100%)
+  // Prepare data for radar chart
+  // Scale combat power to 700% max (divide by 7.0 to fit 0-100 scale), others stay at 100% max
   const radarData = [
     {
       metric: `戦闘力の平均比\n${(metrics.combatPowerRatio / 100).toFixed(1)}倍`,
-      value: Math.min(metrics.combatPowerRatio, 100),
+      value: Math.min(metrics.combatPowerRatio / 7.0, 100),
       fullValue: metrics.combatPowerRatio,
     },
     {
