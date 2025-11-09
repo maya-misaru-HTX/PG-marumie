@@ -178,8 +178,8 @@ export default function PoliticianRadarChart({ transactions, summary, politician
         </div>
 
         {/* Desktop - match headshot size (256x256) with extra padding for labels */}
-        <div className="hidden md:block relative" style={{ width: '100%', maxWidth: '378px', height: '378px' }}>
-          <RadarChart width={378} height={378} data={radarData} cx="50%" cy="50%" margin={{ top: 32, right: 45, bottom: 45, left: 45 }}>
+        <div className="hidden md:block relative" style={{ width: '100%', maxWidth: '420px', height: '420px' }}>
+          <RadarChart width={420} height={420} data={radarData} cx="50%" cy="50%" margin={{ top: 60, right: 60, bottom: 60, left: 60 }}>
             <PolarGrid stroke="#E5E7EB" />
             <PolarAngleAxis
               dataKey="metric"
