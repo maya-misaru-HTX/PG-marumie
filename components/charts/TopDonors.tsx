@@ -92,7 +92,7 @@ export default function TopDonors({ transactions, incomeCategories }: TopDonorsP
           <p className="text-sm md:text-base">収入データがありません</p>
         </div>
       ) : (
-        <div className="space-y-2 max-h-[165px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-300 scrollbar-track-neutral-100 hover:scrollbar-thumb-neutral-400">
+        <div className="space-y-2.5 max-h-[210px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-300 scrollbar-track-neutral-100 hover:scrollbar-thumb-neutral-400">
           {topDonors.map((donor, index) => {
           const ranking = getRanking(index, donor.amount);
           const isTop1 = ranking === 1;
@@ -101,25 +101,29 @@ export default function TopDonors({ transactions, incomeCategories }: TopDonorsP
           return (
             <div
               key={donor.name}
-              className={`flex items-center justify-between p-2.5 rounded-lg ${
+              className={`flex items-center justify-between p-3 md:p-3.5 rounded-lg ${
                 isTop1
                   ? 'bg-teal-50 border border-teal-200 shadow-lg'
                   : 'bg-neutral-50'
               }`}
             >
-              <div className="flex items-center gap-2 md:gap-2.5 min-w-0">
+              <div className="flex items-center gap-2.5 md:gap-3 min-w-0 flex-1">
                 <div
-                  className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 text-white rounded-full flex items-center justify-center font-bold text-[10px] md:text-xs"
+                  className="flex-shrink-0 w-6 h-6 md:w-7 md:h-7 text-white rounded-full flex items-center justify-center font-bold text-xs md:text-sm"
                   style={{ backgroundColor: donor.color }}
                 >
                   {ranking}
                 </div>
-                <p className={`font-medium text-[10px] md:text-sm line-clamp-2 min-w-0 ${isTop1 ? 'font-bold text-text-primary' : 'text-text-primary'}`}>
-                  {donor.name}
-                  <span className="text-text-secondary font-normal">（{donor.category}）</span>
-                </p>
+                <div className="min-w-0 flex-1">
+                  <p className={`text-xs md:text-base leading-tight mb-0.5 truncate ${isTop1 ? 'font-bold text-text-primary' : 'font-medium text-text-primary'}`}>
+                    {donor.name}
+                  </p>
+                  <p className="text-[10px] md:text-sm text-text-secondary font-normal truncate">
+                    {donor.category}
+                  </p>
+                </div>
               </div>
-              <p className={`font-bold text-[10px] md:text-sm whitespace-nowrap ml-1 md:ml-2 ${isTop1 ? 'text-teal-700' : 'text-primary-600'}`}>
+              <p className={`font-bold text-xs md:text-base whitespace-nowrap ml-2 md:ml-3 ${isTop1 ? 'text-teal-700' : 'text-primary-600'}`}>
                 {formatJapaneseCurrency(donor.amount)}
               </p>
             </div>

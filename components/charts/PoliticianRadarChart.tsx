@@ -14,7 +14,7 @@ interface PoliticianRadarChartProps {
 const metricDefinitions = [
   {
     title: '戦闘力の平均比',
-    description: '議員平均3594万円との比較'
+    description: '議員の平均収入3594万円との比較'
   },
   {
     title: '防御力',
@@ -240,7 +240,7 @@ export default function PoliticianRadarChart({ transactions, summary }: Politici
                 </div>
                 <div className="flex-1">
                   <h4 className="text-xs md:text-sm font-bold text-text-primary mb-0.5">{metric.title}</h4>
-                  <p className="text-[10px] md:text-xs text-text-secondary">{metric.description}</p>
+                  <p className="text-[11px] md:text-sm text-text-secondary whitespace-nowrap">{metric.description}</p>
                 </div>
               </div>
             ))}

@@ -119,17 +119,17 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
         {income.categories.length > 0 ? (
           <>
             {/* Mobile version */}
-            <div className="flex flex-row items-center justify-center gap-1 md:hidden">
+            <div className="flex flex-col items-center justify-center gap-4 md:hidden">
               {/* Pie Chart */}
               <div className="flex-shrink-0">
-                <PieChart width={140} height={140}>
+                <PieChart width={200} height={200}>
                   <Pie
                     data={incomeData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={renderCustomizedLabel(incomeData, 11)}
-                    outerRadius={55}
+                    label={renderCustomizedLabel(incomeData, 12)}
+                    outerRadius={80}
                     fill="#8884d8"
                     dataKey="amount"
                     startAngle={90}
@@ -142,13 +142,13 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
                 </PieChart>
               </div>
 
-              {/* Legend on the right */}
-              <div className="space-y-1.5">
+              {/* Legend below */}
+              <div className="w-full space-y-2 flex flex-col items-start ml-[150px]">
                 {incomeData.map((cat) => (
-                  <div key={cat.category} className="flex items-center gap-1.5 text-[9px]">
-                    <div className="flex items-center gap-1">
+                  <div key={cat.category} className="flex items-center gap-3 text-xs">
+                    <div className="flex items-center gap-2">
                       <div
-                        className="w-2 h-2 rounded-full flex-shrink-0"
+                        className="w-3 h-3 rounded-full flex-shrink-0"
                         style={{ backgroundColor: cat.color }}
                       />
                       <span className="text-text-primary whitespace-nowrap">{cat.category}</span>
