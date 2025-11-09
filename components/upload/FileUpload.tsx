@@ -93,6 +93,18 @@ export default function FileUpload({ onReportLoaded }: FileUploadProps) {
 
   return (
     <Card>
+      {/* Template Link */}
+      <div className="mb-4 text-center">
+        <a
+          href="https://docs.google.com/spreadsheets/d/1fXFQPWBj2Yknl-c-W7aK8B3cIEHmwqgteLtb9q-c1Cs/edit?gid=1829830501#gid=1829830501"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm md:text-base text-primary-600 hover:text-primary-700 hover:underline font-medium inline-flex items-center gap-1"
+        >
+          📄 インプット用のExcelテンプレートを開く
+        </a>
+      </div>
+
       <div
         className={`
           border-2 border-dashed rounded-[16px] md:rounded-[22px] p-4 md:p-6 text-center transition-all

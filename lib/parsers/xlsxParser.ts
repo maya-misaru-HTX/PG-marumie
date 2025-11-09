@@ -6,6 +6,8 @@ interface XLSXMetadata {
   politician?: string;
   organization?: string;
   fiscalYear?: string;
+  party?: string;
+  hereditary?: string;
   address?: string;
   accountant?: string;
   representative?: string;
@@ -47,6 +49,8 @@ export function parseXLSX(file: File): Promise<ExpenseReport> {
           name: metadata.politician || '不明',
           organization: metadata.organization || '不明',
           fiscalYear: metadata.fiscalYear || new Date().getFullYear().toString(),
+          party: metadata.party,
+          hereditary: metadata.hereditary,
           address: metadata.address,
           accountant: metadata.accountant,
           representative: metadata.representative,
@@ -356,6 +360,10 @@ function extractMetadataNew(workbook: XLSX.WorkBook): XLSXMetadata {
       metadata.organization = String(value || '').trim();
     } else if (normalizedKey === 'POLITICIAN' || normalizedKey === '政治家') {
       metadata.politician = String(value || '').trim();
+    } else if (normalizedKey === 'PARTY' || normalizedKey === '政党') {
+      metadata.party = String(value || '').trim();
+    } else if (normalizedKey === 'HEREDITARY' || normalizedKey === '世襲') {
+      metadata.hereditary = String(value || '').trim();
     } else if (normalizedKey === 'INCOME_TOTAL' || normalizedKey === '収入合計') {
       metadata.incomeTotal = parseAmount(value);
     } else if (normalizedKey === 'CARRIED_FROM_PREV' || normalizedKey === '昨年からの繰越') {
@@ -391,7 +399,7 @@ function extractTransactionsNew(workbook: XLSX.WorkBook): Transaction[] {
   const typeCol = headers.findIndex(h => h === 'タイプ');
   const categoryCol = headers.findIndex(h => h === 'カテゴリー');
   const subcategoryCol = findColumnIndex(headers, ['飲食ジャンル', 'サブカテゴリー', 'ジャンル']);
-  const recipientCol = headers.findIndex(h => h === '支出先/寄附者');
+  const recipientCol = findColumnIndex(headers, ['支出先/寄附者', '寄付者・受給者', '寄附者', '支出先']);
   const amountCol = headers.findIndex(h => h.includes('金額'));
   const dateCol = headers.findIndex(h => h === '年月日');
   const addressCol = headers.findIndex(h => h === '住所');
@@ -411,7 +419,6 @@ function extractTransactionsNew(workbook: XLSX.WorkBook): Transaction[] {
     const type = typeStr === '収入' ? 'income' : 'expense';
     const category = categoryCol >= 0 ? String(row[categoryCol] || '').trim() : '';
     const description = recipientCol >= 0 ? String(row[recipientCol] || '').trim() : '';
-    const recipient = addressCol >= 0 ? String(row[addressCol] || '').trim() : undefined;
     const dateValue = dateCol >= 0 ? row[dateCol] : null;
 
     const transaction: Transaction = {
@@ -420,7 +427,7 @@ function extractTransactionsNew(workbook: XLSX.WorkBook): Transaction[] {
       category: category || (type === 'income' ? 'その他の収入' : 'その他の経費'),
       subcategory: subcategoryCol >= 0 ? String(row[subcategoryCol] || '').trim() : undefined,
       description,
-      recipient: recipient || undefined,
+      recipient: description || undefined,
       location: addressCol >= 0 ? String(row[addressCol] || '').trim() : undefined,
       url: urlCol >= 0 ? String(row[urlCol] || '').trim() : undefined,
       amount,

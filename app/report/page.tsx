@@ -110,31 +110,12 @@ function ReportContent() {
         <div className="max-w-[826px] mx-auto space-y-4 md:space-y-8">
 
           {/* Politician Headshot and Radar Chart */}
-          {report.politician.headshotUrl && (
-            <div style={{ marginTop: '0px' }}>
-              {/* Mobile Layout - Stacked */}
-              <div className="flex flex-col items-center gap-4 md:hidden">
-                <div className="w-48 h-48">
-                  <img
-                    src={report.politician.headshotUrl}
-                    alt={report.politician.name}
-                    className="w-full h-full rounded-full object-cover border-4 border-neutral-200 shadow-lg"
-                  />
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-text-primary">
-                    戦闘力 <span style={{ color: '#14b8a6' }}>{formatJapaneseCurrency(report.summary.incomeTotal)}</span>
-                  </p>
-                </div>
-                <div className="w-full -my-4 mb-5">
-                  <PoliticianRadarChart transactions={report.transactions} summary={report.summary} />
-                </div>
-              </div>
-
-              {/* Desktop Layout - Side by Side */}
-              <div className="hidden md:flex md:flex-row md:items-start md:gap-8 md:justify-center">
-                <div className="flex flex-col items-center gap-4 flex-shrink-0">
-                  <div className="w-64 h-64">
+          <div style={{ marginTop: '0px' }}>
+            {report.politician.headshotUrl ? (
+              <>
+                {/* Mobile Layout - Stacked (with headshot) */}
+                <div className="flex flex-col items-center gap-4 md:hidden">
+                  <div className="w-48 h-48">
                     <img
                       src={report.politician.headshotUrl}
                       alt={report.politician.name}
@@ -142,17 +123,64 @@ function ReportContent() {
                     />
                   </div>
                   <div className="text-center">
+                    <p className="text-2xl font-bold text-text-primary">
+                      戦闘力 <span style={{ color: '#14b8a6' }}>{formatJapaneseCurrency(report.summary.incomeTotal)}</span>
+                    </p>
+                  </div>
+                  <div className="w-full -my-4 mb-5">
+                    <PoliticianRadarChart transactions={report.transactions} summary={report.summary} />
+                  </div>
+                </div>
+
+                {/* Desktop Layout - Side by Side (with headshot) */}
+                <div className="hidden md:flex md:flex-row md:items-start md:gap-8 md:justify-center">
+                  <div className="flex flex-col items-center gap-4 flex-shrink-0">
+                    <div className="w-64 h-64">
+                      <img
+                        src={report.politician.headshotUrl}
+                        alt={report.politician.name}
+                        className="w-full h-full rounded-full object-cover border-4 border-neutral-200 shadow-lg"
+                      />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-4xl font-bold text-text-primary">
+                        戦闘力 <span style={{ color: '#14b8a6' }}>{formatJapaneseCurrency(report.summary.incomeTotal)}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="w-full max-w-md flex-shrink-0 -my-4 mb-5">
+                    <PoliticianRadarChart transactions={report.transactions} summary={report.summary} />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Mobile Layout - Without headshot */}
+                <div className="flex flex-col items-center gap-4 md:hidden">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-text-primary">
+                      戦闘力 <span style={{ color: '#14b8a6' }}>{formatJapaneseCurrency(report.summary.incomeTotal)}</span>
+                    </p>
+                  </div>
+                  <div className="w-full -my-4 mb-5">
+                    <PoliticianRadarChart transactions={report.transactions} summary={report.summary} />
+                  </div>
+                </div>
+
+                {/* Desktop Layout - Without headshot */}
+                <div className="hidden md:flex md:flex-col md:items-center md:gap-4">
+                  <div className="text-center">
                     <p className="text-4xl font-bold text-text-primary">
                       戦闘力 <span style={{ color: '#14b8a6' }}>{formatJapaneseCurrency(report.summary.incomeTotal)}</span>
                     </p>
                   </div>
+                  <div className="w-full max-w-md -my-4 mb-5">
+                    <PoliticianRadarChart transactions={report.transactions} summary={report.summary} />
+                  </div>
                 </div>
-                <div className="w-full max-w-md flex-shrink-0 -my-4 mb-5">
-                  <PoliticianRadarChart transactions={report.transactions} summary={report.summary} />
-                </div>
-              </div>
-            </div>
-          )}
+              </>
+            )}
+          </div>
 
           {/* Income Pie Section */}
           <div className="scroll-mt-24">
@@ -166,7 +194,7 @@ function ReportContent() {
 
           {/* Top Restaurants Section */}
           <div id="top-restaurants" className="scroll-mt-24">
-            <TopRestaurants transactions={report.transactions} />
+            <TopRestaurants transactions={report.transactions} showImages={!!report.politician.headshotUrl} />
           </div>
 
           {/* Transaction Table Section */}

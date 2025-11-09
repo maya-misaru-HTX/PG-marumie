@@ -3,10 +3,10 @@
 import { Transaction } from '@/lib/types';
 import { formatJapaneseCurrency } from '@/lib/calculations/aggregations';
 import Card from '../ui/Card';
-import { Upload } from 'lucide-react';
 
 interface TopRestaurantsProps {
   transactions: Transaction[];
+  showImages?: boolean;
 }
 
 interface RestaurantData {
@@ -18,7 +18,7 @@ interface RestaurantData {
   count: number;
 }
 
-export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
+export default function TopRestaurants({ transactions, showImages = false }: TopRestaurantsProps) {
   // Predefined images for specific restaurants
   const predefinedImages: { [key: string]: string } = {
     '東京重よし': '/images/Shigeyoshi.png',
@@ -32,7 +32,9 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
     '永田町天竹': '/images/fugu.png',
     '割烹味岡': '/images/ajioka.png',
     '西洋料理東洋軒': '/images/toyo.png',
+    '東洋軒': '/images/toyo.png',
     '東京吉兆銀座店': '/images/kicho.png',
+    '古仙': '/images/kosen.png',
   };
 
   // Filter for restaurant expenses and aggregate by restaurant name
@@ -80,10 +82,6 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
     .sort((a, b) => b.totalAmount - a.totalAmount)
     .slice(0, 10);
 
-  if (allRestaurants.length === 0) {
-    return null;
-  }
-
   // Calculate total count and amount for all restaurant transactions
   const totalTransactions = transactions.filter((t) => t.type === 'expense' && t.category === '高級レストラン').length;
   const totalAmount = transactions
@@ -92,10 +90,10 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
 
   const RestaurantRow = ({ restaurant, index, isSpending }: { restaurant: RestaurantData; index: number; isSpending: boolean }) => {
     const isTop1 = index === 0;
-    const restaurantImage = predefinedImages[restaurant.name];
+    const restaurantImage = showImages ? predefinedImages[restaurant.name] : undefined;
 
     const content = (
-      <div className="p-3 pb-0 rounded-lg transition-all h-full bg-gradient-to-br from-red-50/80 to-white/80 backdrop-blur-sm border border-red-200/50 hover:shadow-lg hover:border-red-300/60 flex flex-col">
+      <div className={`p-3 ${restaurantImage ? 'pb-0' : ''} rounded-lg transition-all h-full bg-gradient-to-br from-red-50/80 to-white/80 backdrop-blur-sm border border-red-200/50 hover:shadow-lg hover:border-red-300/60 flex flex-col`}>
         {/* Top section: Ranking badge + Restaurant info */}
         <div className="flex items-start gap-2 mb-2">
           <div
@@ -123,17 +121,12 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
           </div>
         </div>
 
-        {/* Image display */}
-        <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-neutral-100 border border-neutral-200">
-          {restaurantImage ? (
+        {/* Image display - only show if showImages prop is true and image exists */}
+        {showImages && restaurantImage && (
+          <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-neutral-100 border border-neutral-200">
             <img src={restaurantImage} alt={restaurant.name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center">
-              <Upload className="w-6 h-6 text-neutral-400" />
-              <span className="text-xs text-neutral-400 mt-2">画像なし</span>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     );
 
@@ -161,13 +154,25 @@ export default function TopRestaurants({ transactions }: TopRestaurantsProps) {
       </div>
 
       {/* Total Spending Ranking - Horizontal Gallery */}
-      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-neutral-300 scrollbar-track-neutral-100 hover:scrollbar-thumb-neutral-400">
-        {topBySpending.map((restaurant, index) => (
-          <div key={restaurant.name} className="flex-shrink-0 w-[160px] md:w-[180px] h-[230px] md:h-[250px]">
-            <RestaurantRow restaurant={restaurant} index={index} isSpending={true} />
-          </div>
-        ))}
-      </div>
+      {topBySpending.length === 0 ? (
+        <div className="text-center py-8 text-text-secondary">
+          <p className="text-sm md:text-base">レストランデータがありません</p>
+        </div>
+      ) : (
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-neutral-300 scrollbar-track-neutral-100 hover:scrollbar-thumb-neutral-400">
+          {topBySpending.map((restaurant, index) => {
+            const hasImage = showImages && predefinedImages[restaurant.name];
+            return (
+              <div
+                key={restaurant.name}
+                className={`flex-shrink-0 w-[160px] md:w-[180px] ${showImages && hasImage ? 'h-[230px] md:h-[250px]' : 'h-auto'}`}
+              >
+                <RestaurantRow restaurant={restaurant} index={index} isSpending={true} />
+              </div>
+            );
+          })}
+        </div>
+      )}
     </Card>
   );
 }

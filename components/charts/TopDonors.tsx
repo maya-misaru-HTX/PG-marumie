@@ -62,16 +62,15 @@ export default function TopDonors({ transactions, incomeCategories }: TopDonorsP
     topDonors = [...topDonors, ...additionalDonors];
   }
 
-  if (topDonors.length === 0) {
-    return null;
-  }
-
   // Calculate ranking labels (handle ties)
   const getRanking = (index: number, amount: number): number => {
     if (index < 14) return index + 1;
     // For 15th place and beyond, check if tied with 15th
-    const fifteenthAmount = allDonors[14].amount;
-    return amount === fifteenthAmount ? 15 : index + 1;
+    if (allDonors.length > 14) {
+      const fifteenthAmount = allDonors[14].amount;
+      return amount === fifteenthAmount ? 15 : index + 1;
+    }
+    return index + 1;
   };
 
   return (
@@ -88,8 +87,13 @@ export default function TopDonors({ transactions, incomeCategories }: TopDonorsP
         </a>
       </div>
 
-      <div className="space-y-2 max-h-[165px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-300 scrollbar-track-neutral-100 hover:scrollbar-thumb-neutral-400">
-        {topDonors.map((donor, index) => {
+      {topDonors.length === 0 ? (
+        <div className="text-center py-8 text-text-secondary">
+          <p className="text-sm md:text-base">収入データがありません</p>
+        </div>
+      ) : (
+        <div className="space-y-2 max-h-[165px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-neutral-300 scrollbar-track-neutral-100 hover:scrollbar-thumb-neutral-400">
+          {topDonors.map((donor, index) => {
           const ranking = getRanking(index, donor.amount);
           const isTop1 = ranking === 1;
           const isTop3 = ranking <= 3;
@@ -121,7 +125,8 @@ export default function TopDonors({ transactions, incomeCategories }: TopDonorsP
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </Card>
   );
 }
