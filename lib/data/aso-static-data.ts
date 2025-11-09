@@ -10,7 +10,8 @@ export const asoStaticReport: Omit<ExpenseReport, 'monthlyData' | 'metadata'> = 
     organization: '九州素淮会',
     fiscalYear: '2023',
     party: '自民',
-    hereditary: '3代目',
+    hereditary: '4代目',
+    electionCount: 14,
     headshotUrl: '/images/Aso/aso.png',
   },
   summary: {

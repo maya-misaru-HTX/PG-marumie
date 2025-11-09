@@ -16,8 +16,8 @@ type SortDirection = 'asc' | 'desc';
 
 export default function TransactionTable({ transactions }: TransactionTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [incomeCategoryFilter, setIncomeCategoryFilter] = useState<string[]>(['セルフ寄付']);
-  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState<string[]>(['セルフ寄付']);
+  const [incomeCategoryFilter, setIncomeCategoryFilter] = useState<string[]>([]);
+  const [expenseCategoryFilter, setExpenseCategoryFilter] = useState<string[]>(['高級レストラン']);
   const [isIncomeDropdownOpen, setIsIncomeDropdownOpen] = useState(false);
   const [isExpenseDropdownOpen, setIsExpenseDropdownOpen] = useState(false);
   const [sortField, setSortField] = useState<SortField>('amount');
@@ -484,7 +484,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
             <thead className="sticky top-0 bg-white border-b-2 border-neutral-200 z-10">
               <tr>
                 <th
-                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50"
+                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[35%] md:w-auto"
                   onClick={() => handleSort('description')}
                 >
                   <div className="flex items-center gap-1 md:gap-2">
@@ -493,7 +493,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   </div>
                 </th>
                 <th
-                  className="text-right py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50"
+                  className="text-right py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[25%] md:w-auto"
                   onClick={() => handleSort('amount')}
                 >
                   <div className="flex items-center justify-end gap-1 md:gap-2">
@@ -502,7 +502,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   </div>
                 </th>
                 <th
-                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50"
+                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[25%] md:w-auto"
                   onClick={() => handleSort('category')}
                 >
                   <div className="flex items-center gap-1 md:gap-2">
@@ -511,7 +511,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   </div>
                 </th>
                 <th
-                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50"
+                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[15%] md:w-auto"
                   onClick={() => handleSort('date')}
                 >
                   <div className="flex items-center gap-1 md:gap-2">
@@ -527,18 +527,18 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   key={transaction.id}
                   className="border-b border-neutral-100 hover:bg-neutral-50"
                 >
-                  <td className="py-2 px-2 md:py-3 md:px-4">
-                    <p className="text-xs md:text-sm font-medium text-text-primary whitespace-nowrap">
+                  <td className="py-2 px-2 md:py-3 md:px-4 w-[35%] md:w-auto">
+                    <p className="text-xs md:text-sm font-medium text-text-primary truncate max-w-[120px] md:max-w-none md:whitespace-nowrap">
                       {transaction.description}
                     </p>
                     {transaction.location && (
-                      <p className="text-[10px] md:text-xs text-text-secondary mt-0.5 md:mt-1 whitespace-nowrap">
+                      <p className="text-[10px] md:text-xs text-text-secondary mt-0.5 md:mt-1 truncate max-w-[120px] md:max-w-none md:whitespace-nowrap">
                         {transaction.location}
                       </p>
                     )}
                   </td>
                   <td
-                    className={`py-2 px-2 md:py-3 md:px-4 text-right text-xs md:text-sm font-medium ${
+                    className={`py-2 px-2 md:py-3 md:px-4 text-right text-xs md:text-sm font-medium w-[25%] md:w-auto ${
                       transaction.type === 'income'
                         ? 'text-primary-600'
                         : 'text-red-600'
@@ -547,14 +547,14 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                     {transaction.type === 'income' ? '+' : '-'}
                     {formatJapaneseCurrency(transaction.amount)}
                   </td>
-                  <td className="py-2 px-2 md:py-3 md:px-4">
+                  <td className="py-2 px-2 md:py-3 md:px-4 w-[25%] md:w-auto">
                     <Badge
                       color={transaction.type === 'income' ? '#64D8C6' : '#EF4444'}
                     >
                       {transaction.category}
                     </Badge>
                   </td>
-                  <td className="py-2 px-2 md:py-3 md:px-4 text-xs md:text-sm text-text-secondary">
+                  <td className="py-2 px-2 md:py-3 md:px-4 text-xs md:text-sm text-text-secondary w-[15%] md:w-auto">
                     {transaction.date.slice(5)}
                   </td>
                 </tr>

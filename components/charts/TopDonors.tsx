@@ -83,7 +83,7 @@ export default function TopDonors({ transactions, incomeCategories }: TopDonorsP
           rel="noopener noreferrer"
           className="text-[10px] sm:text-xs md:text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline whitespace-nowrap flex-shrink-0"
         >
-          🔍 正体を詳しく調べる！
+          🔍 もっと調べる！
         </a>
       </div>
 

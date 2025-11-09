@@ -8,6 +8,7 @@ interface XLSXMetadata {
   fiscalYear?: string;
   party?: string;
   hereditary?: string;
+  electionCount?: number;
   address?: string;
   accountant?: string;
   representative?: string;
@@ -51,6 +52,7 @@ export function parseXLSX(file: File): Promise<ExpenseReport> {
           fiscalYear: metadata.fiscalYear || new Date().getFullYear().toString(),
           party: metadata.party,
           hereditary: metadata.hereditary,
+          electionCount: metadata.electionCount,
           address: metadata.address,
           accountant: metadata.accountant,
           representative: metadata.representative,
@@ -364,6 +366,8 @@ function extractMetadataNew(workbook: XLSX.WorkBook): XLSXMetadata {
       metadata.party = String(value || '').trim();
     } else if (normalizedKey === 'HEREDITARY' || normalizedKey === '世襲') {
       metadata.hereditary = String(value || '').trim();
+    } else if (normalizedKey === 'ELECTION_COUNT' || normalizedKey === '当選回数') {
+      metadata.electionCount = Math.floor(parseAmount(value));
     } else if (normalizedKey === 'INCOME_TOTAL' || normalizedKey === '収入合計') {
       metadata.incomeTotal = parseAmount(value);
     } else if (normalizedKey === 'CARRIED_FROM_PREV' || normalizedKey === '昨年からの繰越') {

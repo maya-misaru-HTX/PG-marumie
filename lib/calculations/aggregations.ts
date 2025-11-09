@@ -46,10 +46,20 @@ export function calculateCategoryBreakdowns(
   // Sort by amount descending
   const sorted = categories.sort((a, b) => b.amount - a.amount);
 
-  // Assign colors based on rank (largest = darkest, smallest = lightest)
-  const gradationPalette = type === 'income'
-    ? ['#1A5E56', '#238778', '#2FA897', '#4BC4B0', '#64D8C6', '#8FE5D6', '#BCECD3', '#E6F7F4']
-    : ['#7F1D1D', '#991B1B', '#B91C1C', '#DC2626', '#EF4444', '#F87171', '#FCA5A5', '#FEE2E2'];
+  // Fixed color mapping for income categories (darkest to lightest)
+  const incomeCategoryColors: { [key: string]: string } = {
+    'セルフ寄付': '#1A5E56',           // Darkest
+    'イベント・グッズ売上': '#238778',
+    '政治資金パーティー': '#2FA897',
+    '企業・団体献金': '#4BC4B0',
+    '政治団体からの寄付': '#64D8C6',
+    '個人からの寄付': '#8FE5D6',      // Lighter
+    'その他': '#9CA3AF',
+    'その他の収入': '#9CA3AF',
+  };
+
+  // Fallback gradation palette for expenses
+  const expenseGradationPalette = ['#7F1D1D', '#991B1B', '#B91C1C', '#DC2626', '#EF4444', '#F87171', '#FCA5A5', '#FEE2E2'];
 
   return sorted.map((cat, index) => {
     // Special case for "その他" - always gray
@@ -57,7 +67,15 @@ export function calculateCategoryBreakdowns(
       return { ...cat, color: '#9CA3AF' };
     }
 
-    // Assign color from gradation palette based on index
+    // For income, use fixed color mapping
+    if (type === 'income' && incomeCategoryColors[cat.category]) {
+      return { ...cat, color: incomeCategoryColors[cat.category] };
+    }
+
+    // For expenses or unmapped categories, use gradation palette based on index
+    const gradationPalette = type === 'income'
+      ? ['#1A5E56', '#238778', '#2FA897', '#4BC4B0', '#64D8C6', '#8FE5D6', '#BCECD3', '#E6F7F4']
+      : expenseGradationPalette;
     const colorIndex = Math.min(index, gradationPalette.length - 1);
     return { ...cat, color: gradationPalette[colorIndex] };
   });

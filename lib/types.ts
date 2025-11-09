@@ -6,6 +6,7 @@ export interface PoliticianInfo {
   fiscalYear: string;
   party?: string;
   hereditary?: string;
+  electionCount?: number;
   address?: string;
   accountant?: string;
   representative?: string;

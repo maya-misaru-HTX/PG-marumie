@@ -162,7 +162,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
             </div>
 
             {/* Desktop version */}
-            <div className="hidden md:flex flex-row items-center justify-center gap-3">
+            <div className="hidden md:flex flex-row items-center justify-center">
               {/* Pie Chart */}
               <div className="flex-shrink-0">
                 <PieChart width={280} height={280}>
@@ -186,7 +186,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
               </div>
 
               {/* Legend on the right */}
-              <div className="min-w-0 space-y-3">
+              <div className="min-w-0 space-y-3 pl-[40px]">
                 {incomeData.map((cat) => (
                   <div key={cat.category} className="flex items-center gap-4 text-base">
                     <div className="flex items-center gap-2.5 min-w-0">

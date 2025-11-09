@@ -11,6 +11,7 @@ export const hayashiStaticReport: Omit<ExpenseReport, 'monthlyData' | 'metadata'
     fiscalYear: '2023',
     party: '自民',
     hereditary: '4代目',
+    electionCount: 6,
     headshotUrl: '/images/Hayashi/hayashi.png',
   },
   summary: {
@@ -1077,7 +1078,7 @@ export const hayashiStaticReport: Omit<ExpenseReport, 'monthlyData' | 'metadata'
     {
       id: 'income-25',
       type: 'income',
-      category: '党本部・支部交付金',
+      category: '政治団体からの寄付',
       subcategory: '',
       description: '自由民主党本部',
       recipient: '自由民主党本部',
@@ -1149,7 +1150,7 @@ export const hayashiStaticReport: Omit<ExpenseReport, 'monthlyData' | 'metadata'
     {
       id: 'income-27',
       type: 'income',
-      category: '党本部・支部交付金',
+      category: '政治団体からの寄付',
       subcategory: '',
       description: '自由民主党本部',
       recipient: '自由民主党本部',
@@ -1677,7 +1678,7 @@ export const hayashiStaticReport: Omit<ExpenseReport, 'monthlyData' | 'metadata'
     {
       id: 'income-53',
       type: 'income',
-      category: '党本部・支部交付金',
+      category: '政治団体からの寄付',
       subcategory: '',
       description: '自由民主党本部',
       recipient: '自由民主党本部',
@@ -2229,7 +2230,7 @@ export const hayashiStaticReport: Omit<ExpenseReport, 'monthlyData' | 'metadata'
     {
       id: 'income-65',
       type: 'income',
-      category: '党本部・支部交付金',
+      category: '政治団体からの寄付',
       subcategory: '',
       description: '自由民主党本部',
       recipient: '自由民主党本部',
@@ -2373,7 +2374,7 @@ export const hayashiStaticReport: Omit<ExpenseReport, 'monthlyData' | 'metadata'
     {
       id: 'income-77',
       type: 'income',
-      category: '党本部・支部交付金',
+      category: '政治団体からの寄付',
       subcategory: '',
       description: '自由民主党本部',
       recipient: '自由民主党本部',
@@ -2457,7 +2458,7 @@ export const hayashiStaticReport: Omit<ExpenseReport, 'monthlyData' | 'metadata'
     {
       id: 'income-82',
       type: 'income',
-      category: '党本部・支部交付金',
+      category: '政治団体からの寄付',
       subcategory: '',
       description: '自由民主党本部',
       recipient: '自由民主党本部',
@@ -2529,7 +2530,7 @@ export const hayashiStaticReport: Omit<ExpenseReport, 'monthlyData' | 'metadata'
     {
       id: 'income-86',
       type: 'income',
-      category: '党本部・支部交付金',
+      category: '政治団体からの寄付',
       subcategory: '',
       description: '自由民主党本部',
       recipient: '自由民主党本部',

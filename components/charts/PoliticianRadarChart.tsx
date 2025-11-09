@@ -1,40 +1,42 @@
 'use client';
 
 import { useState } from 'react';
-import { Transaction, Summary } from '@/lib/types';
+import { Transaction, Summary, PoliticianInfo } from '@/lib/types';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer } from 'recharts';
 import { formatJapaneseCurrency } from '@/lib/calculations/aggregations';
+import { calculatePoliticianMetrics, calculateOverallScore } from '@/lib/calculations/scores';
 import { Info } from 'lucide-react';
 
 interface PoliticianRadarChartProps {
   transactions: Transaction[];
   summary: Summary;
+  politician: PoliticianInfo;
 }
 
 const metricDefinitions = [
   {
-    title: '戦闘力の平均比',
-    description: '議員の平均収入3594万円との比較'
+    title: '集金力',
+    description: '収入合計（昨年度からの繰越を含む）'
   },
   {
-    title: '防御力',
-    description: '自分の団体への寄付（多いほど政治資金の透明性が低い）'
+    title: '美食力',
+    description: '高級レストランやホテルでの会食・懇親会費'
   },
   {
-    title: '仲間への支援',
-    description: '他の政治団体への寄付（多いほど派閥や集票のパワーが高い）'
+    title: '派閥力',
+    description: '自分の直属の関連団体以外への寄付・交付金'
   },
   {
-    title: '社会への影響力',
-    description: '企業団体献金・政治資金パーティー・イベント等の事業収入'
+    title: '当選力',
+    description: '党議院選挙の当選回数'
   },
   {
-    title: '社交力',
-    description: '高級レストラン、ホテルでの会食・懇親会の出費'
+    title: '世襲力',
+    description: '自分を含め、親系図の中で国政に携わった世代数'
   }
 ];
 
-export default function PoliticianRadarChart({ transactions, summary }: PoliticianRadarChartProps) {
+export default function PoliticianRadarChart({ transactions, summary, politician }: PoliticianRadarChartProps) {
   const [showExplanation, setShowExplanation] = useState(false);
 
   // Close explanation when clicking outside
@@ -49,16 +51,43 @@ export default function PoliticianRadarChart({ transactions, summary }: Politici
   const CustomTick = ({ payload, x, y, textAnchor, fontSize, index, isMobile }: any) => {
     const lines = payload.value.split('\n');
 
-    // Calculate radial offset to push labels further from chart center
-    // Index 0 is the top label (戦闘力の平均比) - needs more offset to prevent overlap
-    // Reduce offset on mobile to prevent overflow
-    const radialOffset = index === 0 ? (isMobile ? 20 : 30) : (isMobile ? 4 : 8);
+    // Top 3 metrics (集金力, 美食力, 派閥力) get special styling regardless of position
+    const metricName = lines[0];
+    const topMetrics = ['集金力', '美食力', '派閥力'];
+    const isTopMetric = topMetrics.includes(metricName);
 
-    // Increase font size for top label by 50%
-    const adjustedFontSize = index === 0 ? fontSize * 1.5 : fontSize;
+    // Different radial offsets for different metrics
+    // 集金力: original distance (top position)
+    // 美食力 & 派閥力: much closer to chart
+    // Others: standard distance
+    let radialOffset;
+    if (metricName === '集金力') {
+      radialOffset = isMobile ? 20 : 30;
+    } else if (metricName === '美食力' || metricName === '派閥力') {
+      radialOffset = isMobile ? 4 : 6;
+    } else {
+      radialOffset = isMobile ? 4 : 8;
+    }
+
+    // Font size adjustments:
+    // 集金力: 1.5x (same as before)
+    // 美食力 & 派閥力: 1.35x (10% smaller than 集金力)
+    // Others: 1x (normal)
+    let adjustedFontSize;
+    if (metricName === '集金力') {
+      adjustedFontSize = fontSize * 1.5;
+    } else if (metricName === '美食力' || metricName === '派閥力') {
+      adjustedFontSize = fontSize * 1.35;
+    } else {
+      adjustedFontSize = fontSize;
+    }
+
+    // Green color for top 3 metrics, default gray for bottom 2
+    const labelColor = isTopMetric ? '#14b8a6' : '#374151';
 
     // Calculate the angle for this label
-    const metrics = ['戦闘力の平均比', '防御力', '仲間への支援', '社会への影響力', '社交力'];
+    // New order: 集金力、派閥力、世襲力、当選力、美食力
+    const metrics = ['集金力', '派閥力', '世襲力', '当選力', '美食力'];
     const angle = (90 - (360 / metrics.length) * index) * (Math.PI / 180);
 
     // Push label away from center along its radial line
@@ -70,7 +99,7 @@ export default function PoliticianRadarChart({ transactions, summary }: Politici
         x={x + offsetX}
         y={y + offsetY}
         textAnchor={textAnchor}
-        fill="#374151"
+        fill={labelColor}
         fontSize={adjustedFontSize}
       >
         <tspan x={x + offsetX} dy="0" fontWeight="bold">{lines[0]}</tspan>
@@ -79,81 +108,41 @@ export default function PoliticianRadarChart({ transactions, summary }: Politici
     );
   };
 
-  // Calculate metrics
-  const calculateMetrics = () => {
-    // 1. 戦闘力の平均比: (今年の収入 / 35,940,000) × 100%
-    const thisYearIncome = summary.incomeTotal - summary.carriedFromPrevYear;
-    const combatPowerRatio = Math.round((thisYearIncome / 35940000) * 100);
+  // Calculate metrics using shared utility function
+  const metrics = calculatePoliticianMetrics(transactions, summary, politician);
 
-    // 2. 防御力: (セルフ寄付合計 / 200,000,000) × 100%
-    const selfDonationTotal = transactions
-      .filter(t => t.category === 'セルフ寄付')
-      .reduce((sum, t) => sum + t.amount, 0);
-    const defensePower = Math.round((selfDonationTotal / 200000000) * 100);
-
-    // 3. 仲間への支援: (仲間への寄付合計 / 10,000,000) × 100%
-    const teamDonationTotal = transactions
-      .filter(t => t.category === '仲間への寄付')
-      .reduce((sum, t) => sum + t.amount, 0);
-    const teamInfluence = Math.round((teamDonationTotal / 10000000) * 100);
-
-    // 4. 社会への影響力: ((イベント・グッズ売上 + 企業・団体献金 + 政治資金パーティー) / 今年の収入) × 100%
-    const socialIncomeCategories = ['イベント・グッズ売上', '企業・団体献金', '政治資金パーティー'];
-    const socialIncomeTotal = transactions
-      .filter(t => t.type === 'income' && socialIncomeCategories.includes(t.category))
-      .reduce((sum, t) => sum + t.amount, 0);
-    const socialInfluence = Math.round((socialIncomeTotal / thisYearIncome) * 100);
-
-    // 5. 社交力: ((高級レストラン + 懇親会) / 15,000,000) × 100%
-    const socialExpenseCategories = ['高級レストラン', '懇親会'];
-    const socialExpenseTotal = transactions
-      .filter(t => socialExpenseCategories.includes(t.category))
-      .reduce((sum, t) => sum + t.amount, 0);
-    const socialPower = Math.round((socialExpenseTotal / 15000000) * 100);
-
-    return {
-      combatPowerRatio,
-      combatPowerSum: thisYearIncome,
-      defensePower,
-      defensePowerSum: selfDonationTotal,
-      teamInfluence,
-      teamInfluenceSum: teamDonationTotal,
-      socialInfluence,
-      socialInfluenceSum: socialIncomeTotal,
-      socialPower,
-      socialPowerSum: socialExpenseTotal,
-    };
-  };
-
-  const metrics = calculateMetrics();
-
-  // Prepare data for radar chart
-  // Scale combat power to 700% max (divide by 7.0 to fit 0-100 scale), others stay at 100% max
+  // Prepare data for radar chart with new metrics
+  // Order: 集金力、派閥力、世襲力、当選力、美食力 (clockwise)
   const radarData = [
     {
-      metric: `戦闘力の平均比\n${(metrics.combatPowerRatio / 100).toFixed(1)}倍`,
-      value: Math.min(metrics.combatPowerRatio / 7.0, 100),
-      fullValue: metrics.combatPowerRatio,
+      metric: `集金力\n${formatJapaneseCurrency(metrics.shukinryokuValue)}`,
+      value: metrics.shukinryokuNormalized,
+      rawValue: metrics.shukinryokuValue,
+      displayScore: metrics.shukinryokuScoreRounded,
     },
     {
-      metric: `防御力\n${formatJapaneseCurrency(metrics.defensePowerSum)}`,
-      value: Math.min(metrics.defensePower, 100),
-      fullValue: metrics.defensePower,
+      metric: `派閥力\n${formatJapaneseCurrency(metrics.habatsuryokuValue)}`,
+      value: metrics.habatsuryokuNormalized,
+      rawValue: metrics.habatsuryokuValue,
+      displayScore: metrics.habatsuryokuScoreRounded,
     },
     {
-      metric: `仲間への支援\n${formatJapaneseCurrency(metrics.teamInfluenceSum)}`,
-      value: Math.min(metrics.teamInfluence, 100),
-      fullValue: metrics.teamInfluence,
+      metric: `世襲力\n${metrics.seshuuryokuValue}代目`,
+      value: metrics.seshuuryokuNormalized,
+      rawValue: metrics.seshuuryokuValue,
+      displayScore: metrics.seshuuryokuValue,
     },
     {
-      metric: `社会への影響力\n${formatJapaneseCurrency(metrics.socialInfluenceSum)}`,
-      value: Math.min(metrics.socialInfluence, 100),
-      fullValue: metrics.socialInfluence,
+      metric: `当選力\n${metrics.tousenryokuScore}回`,
+      value: metrics.tousenryokuNormalized,
+      rawValue: metrics.tousenryokuValue,
+      displayScore: metrics.tousenryokuScore,
     },
     {
-      metric: `社交力\n${formatJapaneseCurrency(metrics.socialPowerSum)}`,
-      value: Math.min(metrics.socialPower, 100),
-      fullValue: metrics.socialPower,
+      metric: `美食力\n${formatJapaneseCurrency(metrics.bishokuryokuValue)}`,
+      value: metrics.bishokuryokuNormalized,
+      rawValue: metrics.bishokuryokuValue,
+      displayScore: metrics.bishokuryokuScoreRounded,
     },
   ];
 
@@ -245,6 +234,14 @@ export default function PoliticianRadarChart({ transactions, summary }: Politici
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Total Score Calculation Explanation */}
+          <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t-2 border-teal-200">
+            <h4 className="text-xs md:text-sm font-bold text-text-primary mb-1 md:mb-1.5">総合スコアの計算方法</h4>
+            <p className="text-[11px] md:text-sm text-text-secondary leading-relaxed">
+              総合スコア = （集金力 + 美食力 + 派閥力 + 当選力）× 世襲力
+            </p>
           </div>
         </div>
       )}

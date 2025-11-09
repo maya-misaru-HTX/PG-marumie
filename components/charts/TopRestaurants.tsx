@@ -60,6 +60,7 @@ export default function TopRestaurants({ transactions, showImages = false, polit
   };
 
   // Filter for restaurant expenses and aggregate by restaurant name
+  // Exclude all 懇親会 transactions
   const restaurantMap = new Map<string, RestaurantData>();
 
   transactions
@@ -96,9 +97,13 @@ export default function TopRestaurants({ transactions, showImages = false, polit
       }
     });
 
-  // Convert to array and apply filters based on politician
+  // Filter out restaurants with visit count = 1 AND total spending < 30,000
+  let allRestaurants = Array.from(restaurantMap.values()).filter(
+    (r) => !(r.count === 1 && r.totalAmount < 30000)
+  );
+
+  // Apply additional filters based on politician
   const isHayashi = politicianName === '林芳正';
-  let allRestaurants = Array.from(restaurantMap.values());
 
   if (isHayashi) {
     // For Hayashi: exclude specific restaurants and single-visit restaurants
@@ -123,7 +128,7 @@ export default function TopRestaurants({ transactions, showImages = false, polit
     const restaurantImage = showImages ? predefinedImages[restaurant.name] : undefined;
 
     const content = (
-      <div className={`relative p-3 ${restaurantImage ? 'pb-0' : ''} rounded-lg transition-all h-full bg-gradient-to-br from-red-50/80 to-white/80 backdrop-blur-sm border border-red-200/50 hover:shadow-lg hover:border-red-300/60 flex flex-col`}>
+      <div className={`relative p-3 ${restaurantImage ? 'pb-0' : 'pb-2'} rounded-lg transition-all h-full bg-gradient-to-br from-red-50/80 to-white/80 backdrop-blur-sm border border-red-200/50 hover:shadow-lg hover:border-red-300/60 flex flex-col`}>
         {/* External link icon - only show if URL exists */}
         {restaurant.url && (
           <div className="absolute top-2 right-2">
@@ -132,7 +137,7 @@ export default function TopRestaurants({ transactions, showImages = false, polit
         )}
 
         {/* Top section: Ranking badge + Restaurant info */}
-        <div className="flex items-start gap-2 mb-2">
+        <div className="flex items-start gap-2">
           <div
             className="flex-shrink-0 w-7 h-7 text-white rounded-full flex items-center justify-center font-bold text-sm"
             style={{ background: 'linear-gradient(135deg, #EF4444 0%, #DC2626 100%)' }}
@@ -140,11 +145,11 @@ export default function TopRestaurants({ transactions, showImages = false, polit
             {index + 1}
           </div>
 
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-[0.825rem] leading-tight mb-1 text-text-primary truncate">
+          <div className="flex-1 min-w-0 pr-6">
+            <p className="font-bold text-[0.825rem] leading-tight mb-1 text-text-primary break-words">
               {customDisplayNames[restaurant.name] || restaurant.name}
             </p>
-            <p className="text-xs text-text-secondary mb-2 truncate">
+            <p className="text-xs text-text-secondary mb-1 break-words">
               {customGenres[restaurant.name] || restaurant.genre || '高級料理'}
             </p>
             <div className="flex items-center gap-2">
@@ -183,10 +188,6 @@ export default function TopRestaurants({ transactions, showImages = false, polit
       <div className="mb-6">
         <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
           <h2 className="text-sm md:text-xl lg:text-2xl font-bold text-text-primary whitespace-nowrap">✨ 御用達レストラン</h2>
-          <div className="flex items-center gap-3 md:gap-4 text-sm md:text-xl lg:text-2xl">
-            <span className="text-text-secondary whitespace-nowrap">件数: <span className="font-bold text-text-primary">{totalTransactions}件</span></span>
-            <span className="text-text-secondary whitespace-nowrap">合計金額: <span className="font-bold text-red-600">{formatJapaneseCurrency(totalAmount)}</span></span>
-          </div>
         </div>
       </div>
 
