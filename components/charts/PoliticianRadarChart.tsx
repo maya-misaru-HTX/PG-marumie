@@ -85,11 +85,11 @@ export default function PoliticianRadarChart({ transactions, summary }: Politici
     const thisYearIncome = summary.incomeTotal - summary.carriedFromPrevYear;
     const combatPowerRatio = Math.round((thisYearIncome / 35940000) * 100);
 
-    // 2. 防御力: (セルフ寄付合計 / (50% of 今年の収入)) × 100%
+    // 2. 防御力: (セルフ寄付合計 / 200,000,000) × 100%
     const selfDonationTotal = transactions
       .filter(t => t.category === 'セルフ寄付')
       .reduce((sum, t) => sum + t.amount, 0);
-    const defensePower = Math.round((selfDonationTotal / (thisYearIncome * 0.5)) * 100);
+    const defensePower = Math.round((selfDonationTotal / 200000000) * 100);
 
     // 3. 仲間への支援: (仲間への寄付合計 / 10,000,000) × 100%
     const teamDonationTotal = transactions

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { ExpenseReport } from '@/lib/types';
 import SummaryCards from '@/components/summary/SummaryCards';
 import IncomeExpenseBar from '@/components/charts/IncomeExpenseBar';
@@ -13,29 +13,55 @@ import PoliticianRadarChart from '@/components/charts/PoliticianRadarChart';
 import SectionNav from '@/components/navigation/SectionNav';
 import { formatJapaneseCurrency } from '@/lib/calculations/aggregations';
 import { ArrowLeft } from 'lucide-react';
+import { asoStaticReport } from '@/lib/data/aso-static-data';
+import { hayashiStaticReport } from '@/lib/data/hayashi-static-data';
+
+// Map politician slugs to their data
+const politicianDataMap: { [key: string]: Omit<ExpenseReport, 'monthlyData' | 'metadata'> } = {
+  'aso': asoStaticReport,
+  'hayashi': hayashiStaticReport,
+};
 
 function ReportContent() {
   const router = useRouter();
+  const params = useParams();
   const [report, setReport] = useState<ExpenseReport | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      // Check sessionStorage for report data
-      const sessionData = sessionStorage.getItem('currentReport');
-      if (sessionData) {
-        const report = JSON.parse(sessionData) as ExpenseReport;
-        setReport(report);
-        return;
-      }
+    const loadReport = async () => {
+      try {
+        const politician = params.politician as string;
 
-      // No data source found
-      setError('レポートデータが見つかりません');
-    } catch (err) {
-      console.error('Report loading error:', err);
-      setError('レポートデータの解析に失敗しました');
-    }
-  }, []);
+        // First, try to load from URL parameter
+        if (politician && politicianDataMap[politician]) {
+          const staticData = politicianDataMap[politician];
+
+          // Import enrichReportWithCalculations dynamically
+          const { enrichReportWithCalculations } = await import('@/lib/calculations/aggregations');
+          const enrichedReport = enrichReportWithCalculations(staticData);
+          setReport(enrichedReport);
+          return;
+        }
+
+        // Fallback to sessionStorage for custom uploads
+        const sessionData = sessionStorage.getItem('currentReport');
+        if (sessionData) {
+          const report = JSON.parse(sessionData) as ExpenseReport;
+          setReport(report);
+          return;
+        }
+
+        // No data source found
+        setError('レポートデータが見つかりません');
+      } catch (err) {
+        console.error('Report loading error:', err);
+        setError('レポートデータの解析に失敗しました');
+      }
+    };
+
+    loadReport();
+  }, [params.politician]);
 
   if (error) {
     return (
@@ -74,7 +100,7 @@ function ReportContent() {
             <div className="flex items-center gap-2 md:gap-4 flex-shrink-0 min-w-0">
               <button
                 onClick={() => router.push('/')}
-                className="flex items-center gap-1 md:gap-1.5 text-xs md:text-sm text-text-primary hover:text-primary-600 transition-colors whitespace-nowrap -ml-[9px] md:-ml-[18px] font-medium"
+                className="flex items-center gap-1 md:gap-1.5 text-xs md:text-sm text-text-primary hover:text-primary-600 transition-colors whitespace-nowrap -ml-[9px] md:-ml-[18px] font-medium cursor-pointer"
               >
                 <ArrowLeft className="w-3 h-3 md:w-4 md:h-4" />
                 <span className="hidden sm:inline">戻る</span>
@@ -82,18 +108,18 @@ function ReportContent() {
 
               <div className="flex flex-col gap-1 min-w-0 ml-2 md:ml-5">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-base md:text-xl lg:text-2xl font-bold text-text-primary truncate">
+                  <h1 className="text-lg md:text-2xl lg:text-3xl font-bold text-text-primary truncate">
                     {report.politician.name}
                   </h1>
                   {/* Organization and Hereditary Labels */}
                   <div className="flex gap-1.5">
                     {report.politician.party && (
-                      <span className="px-2 py-0.5 text-[10px] md:text-xs font-medium bg-blue-100 text-blue-700 rounded-full whitespace-nowrap">
+                      <span className="px-3 py-1 text-xs md:text-sm font-medium bg-blue-100 text-blue-700 rounded-full whitespace-nowrap">
                         {report.politician.party}
                       </span>
                     )}
                     {report.politician.hereditary && (
-                      <span className="px-2 py-0.5 text-[10px] md:text-xs font-medium bg-purple-100 text-purple-700 rounded-full whitespace-nowrap">
+                      <span className="px-3 py-1 text-xs md:text-sm font-medium bg-purple-100 text-purple-700 rounded-full whitespace-nowrap">
                         世襲{report.politician.hereditary}
                       </span>
                     )}
@@ -194,7 +220,11 @@ function ReportContent() {
 
           {/* Top Restaurants Section */}
           <div id="top-restaurants" className="scroll-mt-24">
-            <TopRestaurants transactions={report.transactions} showImages={!!report.politician.headshotUrl} />
+            <TopRestaurants
+              transactions={report.transactions}
+              showImages={!!report.politician.headshotUrl}
+              politicianName={report.politician.name}
+            />
           </div>
 
           {/* Transaction Table Section */}

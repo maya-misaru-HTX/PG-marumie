@@ -531,9 +531,9 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                     <p className="text-xs md:text-sm font-medium text-text-primary whitespace-nowrap">
                       {transaction.description}
                     </p>
-                    {transaction.recipient && (
+                    {transaction.location && (
                       <p className="text-[10px] md:text-xs text-text-secondary mt-0.5 md:mt-1 whitespace-nowrap">
-                        {transaction.recipient}
+                        {transaction.location}
                       </p>
                     )}
                   </td>

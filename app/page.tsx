@@ -6,6 +6,7 @@ import FileUpload from '@/components/upload/FileUpload';
 import PoliticianSummaryTable from '@/components/landing/PoliticianSummaryTable';
 import { ExpenseReport } from '@/lib/types';
 import { asoStaticReport, asoSummaryData } from '@/lib/data/aso-static-data';
+import { hayashiStaticReport, hayashiSummaryData } from '@/lib/data/hayashi-static-data';
 import { ChevronDown, ChevronUp, Upload } from 'lucide-react';
 
 export default function Home() {
@@ -17,27 +18,24 @@ export default function Home() {
       // Store report in sessionStorage
       sessionStorage.setItem('currentReport', JSON.stringify(report));
 
-      // Navigate to report page
-      router.push('/report');
+      // Navigate to custom report page
+      router.push('/report/custom');
     } catch (error) {
       console.error('Error storing report:', error);
       alert('レポートデータの保存に失敗しました。');
     }
   };
 
-  const handleViewAsoDetails = () => {
+  const handleViewDetails = (index: number) => {
     try {
-      // Import enrichReportWithCalculations dynamically to avoid SSR issues
-      import('@/lib/calculations/aggregations').then(({ enrichReportWithCalculations }) => {
-        // Enrich the static report with calculated categories and monthly data
-        const enrichedReport = enrichReportWithCalculations(asoStaticReport);
+      // Map index to politician slug
+      const politicianSlugs = ['aso', 'hayashi'];
+      const slug = politicianSlugs[index];
 
-        // Store enriched report data in sessionStorage
-        sessionStorage.setItem('currentReport', JSON.stringify(enrichedReport));
-
-        // Open report page in new tab
-        window.open('/report', '_blank');
-      });
+      if (slug) {
+        // Open report page with unique URL in new tab
+        window.open(`/report/${slug}`, '_blank');
+      }
     } catch (error) {
       console.error('Error opening report:', error);
       alert('レポートを開けませんでした。');
@@ -59,8 +57,8 @@ export default function Home() {
 
         {/* Static Summary Table */}
         <PoliticianSummaryTable
-          data={asoSummaryData}
-          onViewDetails={handleViewAsoDetails}
+          data={[asoSummaryData, hayashiSummaryData]}
+          onViewDetails={handleViewDetails}
         />
 
         {/* Upload Toggle Section */}

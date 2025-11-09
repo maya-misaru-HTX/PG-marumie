@@ -101,7 +101,7 @@ export default function FileUpload({ onReportLoaded }: FileUploadProps) {
           rel="noopener noreferrer"
           className="text-sm md:text-base text-primary-600 hover:text-primary-700 hover:underline font-medium inline-flex items-center gap-1"
         >
-          📄 インプット用のExcelテンプレートを開く
+          📄 インプット用のテンプレートを開く
         </a>
       </div>
 

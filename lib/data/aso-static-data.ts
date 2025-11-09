@@ -11,7 +11,7 @@ export const asoStaticReport: Omit<ExpenseReport, 'monthlyData' | 'metadata'> = 
     fiscalYear: '2023',
     party: '自民',
     hereditary: '3代目',
-    headshotUrl: '/images/aso.png',
+    headshotUrl: '/images/Aso/aso.png',
   },
   summary: {
     incomeTotal: 549831272,

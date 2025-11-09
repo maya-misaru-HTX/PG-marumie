@@ -3,10 +3,12 @@
 import { Transaction } from '@/lib/types';
 import { formatJapaneseCurrency } from '@/lib/calculations/aggregations';
 import Card from '../ui/Card';
+import { ExternalLink } from 'lucide-react';
 
 interface TopRestaurantsProps {
   transactions: Transaction[];
   showImages?: boolean;
+  politicianName?: string;
 }
 
 interface RestaurantData {
@@ -18,23 +20,43 @@ interface RestaurantData {
   count: number;
 }
 
-export default function TopRestaurants({ transactions, showImages = false }: TopRestaurantsProps) {
+export default function TopRestaurants({ transactions, showImages = false, politicianName }: TopRestaurantsProps) {
   // Predefined images for specific restaurants
   const predefinedImages: { [key: string]: string } = {
-    '東京重よし': '/images/Shigeyoshi.png',
-    '波むら': '/images/Hamura.png',
-    '銀座ヒラヤマ': '/images/hirayama.png',
-    '一宝東京店': '/images/Ippou.png',
-    'たいや': '/images/taiya.png',
-    'たい家': '/images/taiya.png',
-    'キャンティ': '/images/chianti.png',
-    'チェント': '/images/chianti.png',
-    '永田町天竹': '/images/fugu.png',
-    '割烹味岡': '/images/ajioka.png',
-    '西洋料理東洋軒': '/images/toyo.png',
-    '東洋軒': '/images/toyo.png',
-    '東京吉兆銀座店': '/images/kicho.png',
-    '古仙': '/images/kosen.png',
+    '東京重よし': '/images/Aso/Shigeyoshi.png',
+    '波むら': '/images/Aso/Hamura.png',
+    '銀座ヒラヤマ': '/images/Aso/hirayama.png',
+    '一宝東京店': '/images/Aso/Ippou.png',
+    'たいや': '/images/Aso/taiya.png',
+    'たい家': '/images/Aso/taiya.png',
+    'キャンティ': '/images/Aso/chianti.png',
+    'チェント': '/images/Aso/chianti.png',
+    '永田町天竹': '/images/Aso/fugu.png',
+    '割烹味岡': '/images/Aso/ajioka.png',
+    '西洋料理東洋軒': '/images/Aso/toyo.png',
+    '東洋軒': '/images/Aso/toyo.png',
+    '東京吉兆銀座店': '/images/Aso/kicho.png',
+    '古仙': '/images/Aso/kosen.png',
+    '春帆楼本店': '/images/Hayashi/shunpanro.png',
+    '蕪庵': '/images/Hayashi/buan.png',
+    '金田中': '/images/Hayashi/kanetanaka.png',
+    '重箱': '/images/Hayashi/jubako.png',
+    'フェルミンチョ': '/images/Hayashi/フェルミンチョ.jpg',
+    '焼肉ジャンボ篠崎本店': '/images/Hayashi/jumbo.png',
+    '白金高輪ぶち': '/images/Hayashi/白金高輪ぶち.png',
+    '山の茶屋': '/images/Hayashi/chaya.png',
+    '龍泉華': '/images/Hayashi/ryusenka.png',
+  };
+
+  // Custom display names for restaurants
+  const customDisplayNames: { [key: string]: string } = {
+    '焼肉ジャンボ篠崎本店': '焼肉ジャンボ',
+    '下関唐戸魚市場株式会社': '下関唐戸魚市場',
+  };
+
+  // Custom genres for restaurants
+  const customGenres: { [key: string]: string } = {
+    '焼肉ジャンボ篠崎本店': '焼肉',
   };
 
   // Filter for restaurant expenses and aggregate by restaurant name
@@ -74,13 +96,21 @@ export default function TopRestaurants({ transactions, showImages = false }: Top
       }
     });
 
-  // Convert to array
-  const allRestaurants = Array.from(restaurantMap.values());
+  // Convert to array and apply filters based on politician
+  const isHayashi = politicianName === '林芳正';
+  let allRestaurants = Array.from(restaurantMap.values());
 
-  // Get top 10 by spending
+  if (isHayashi) {
+    // For Hayashi: exclude specific restaurants and single-visit restaurants
+    const restaurantsToExclude = ['キャピトルホテル東急', '焼肉 頂楽 八丁堀本店', '金田中', '重箱', 'フェルミンチョ', '下関唐戸魚市場株式会社', 'ザ・キャピトルホテル東急'];
+    allRestaurants = allRestaurants.filter(r => !restaurantsToExclude.includes(r.name) && r.count > 1);
+  }
+
+  // Get top restaurants by spending (6 for Hayashi, 10 for others)
+  const topCount = isHayashi ? 6 : 10;
   const topBySpending = [...allRestaurants]
     .sort((a, b) => b.totalAmount - a.totalAmount)
-    .slice(0, 10);
+    .slice(0, topCount);
 
   // Calculate total count and amount for all restaurant transactions
   const totalTransactions = transactions.filter((t) => t.type === 'expense' && t.category === '高級レストラン').length;
@@ -93,7 +123,14 @@ export default function TopRestaurants({ transactions, showImages = false }: Top
     const restaurantImage = showImages ? predefinedImages[restaurant.name] : undefined;
 
     const content = (
-      <div className={`p-3 ${restaurantImage ? 'pb-0' : ''} rounded-lg transition-all h-full bg-gradient-to-br from-red-50/80 to-white/80 backdrop-blur-sm border border-red-200/50 hover:shadow-lg hover:border-red-300/60 flex flex-col`}>
+      <div className={`relative p-3 ${restaurantImage ? 'pb-0' : ''} rounded-lg transition-all h-full bg-gradient-to-br from-red-50/80 to-white/80 backdrop-blur-sm border border-red-200/50 hover:shadow-lg hover:border-red-300/60 flex flex-col`}>
+        {/* External link icon - only show if URL exists */}
+        {restaurant.url && (
+          <div className="absolute top-2 right-2">
+            <ExternalLink className="w-4 h-4 text-neutral-300 scale-95" />
+          </div>
+        )}
+
         {/* Top section: Ranking badge + Restaurant info */}
         <div className="flex items-start gap-2 mb-2">
           <div
@@ -105,16 +142,16 @@ export default function TopRestaurants({ transactions, showImages = false }: Top
 
           <div className="flex-1 min-w-0">
             <p className="font-bold text-[0.825rem] leading-tight mb-1 text-text-primary truncate">
-              {restaurant.name}
+              {customDisplayNames[restaurant.name] || restaurant.name}
             </p>
-            <p className="text-[10px] text-text-secondary mb-2 truncate">
-              {restaurant.genre || '高級料理'}
+            <p className="text-xs text-text-secondary mb-2 truncate">
+              {customGenres[restaurant.name] || restaurant.genre || '高級料理'}
             </p>
             <div className="flex items-center gap-2">
               <p className="font-bold text-xs text-red-600">
                 {formatJapaneseCurrency(restaurant.totalAmount)}
               </p>
-              <p className="text-[10px] text-text-primary">
+              <p className="text-xs text-text-primary">
                 {restaurant.count}回
               </p>
             </div>
