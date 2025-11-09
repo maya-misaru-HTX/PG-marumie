@@ -24,7 +24,7 @@ export function calculatePoliticianMetrics(
     .reduce((sum, t) => sum + t.amount, 0);
   const bishokuryokuScore = bishokuryokuValue / 1000000; // Not rounded for calculation
   const bishokuryokuScoreRounded = Math.round(bishokuryokuScore); // Rounded for display
-  const bishokuryokuNormalized = Math.max(0, Math.min(100, (bishokuryokuValue / 10000000) * 100));
+  const bishokuryokuNormalized = Math.max(0, Math.min(100, (bishokuryokuValue / 6000000) * 100));
 
   // 3. 派閥力: 実際の金額/100万 (faction donations / 1M)
   const habatsuryokuValue = transactions
@@ -145,9 +145,9 @@ export function calculatePoliticianMBTIDetails(
   const R_P = metrics.shukinryokuValue >= 200000000 ? 'R' : 'P';
   const R_P_percentage = metrics.shukinryokuNormalized;
 
-  // X/M: 美食力 (高級レストラン・ホテルでの会食・懇親会費) - 100万円以上=X (Extravagant) / 未満=M (Modest)
-  // Match radar chart normalization: (value / 10M) * 100
-  const X_M = metrics.bishokuryokuValue >= 1000000 ? 'X' : 'M';
+  // X/M: 美食力 (高級レストラン・ホテルでの会食・懇親会費) - 300万円以上=X (Extravagant) / 未満=M (Modest)
+  // Match radar chart normalization: (value / 6M) * 100
+  const X_M = metrics.bishokuryokuValue >= 3000000 ? 'X' : 'M';
   const X_M_percentage = metrics.bishokuryokuNormalized;
 
   // L/F: 派閥力 (他政治団体への交付金など) - 100万円以上=L (Leader) / 未満=F (Follower)
