@@ -146,25 +146,25 @@ function ReportContent() {
 
               <div className="flex flex-col gap-1 min-w-0 ml-2 md:ml-5">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-lg md:text-2xl lg:text-3xl font-bold text-text-primary truncate">
+                  <h1 className="text-[1.235rem] md:text-[1.65rem] lg:text-[2.0625rem] font-bold text-text-primary truncate">
                     {report.politician.name}
                   </h1>
                   {/* Organization and Hereditary Labels */}
                   <div className="flex gap-1.5">
                     {report.politician.party && (
-                      <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs md:text-sm font-medium rounded-full whitespace-nowrap">
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 text-[0.825rem] md:text-[0.9625rem] font-medium rounded-full whitespace-nowrap">
                         {report.politician.party}
                       </span>
                     )}
                     {report.politician.hereditary && (
                       <span
-                        className="px-3 py-1 text-xs md:text-sm font-medium rounded-full whitespace-nowrap"
+                        className="px-3 py-1 text-[0.825rem] md:text-[0.9625rem] font-medium rounded-full whitespace-nowrap"
                         style={{
                           backgroundColor: getHereditaryColor(report.politician.hereditary).bg,
                           color: getHereditaryColor(report.politician.hereditary).text,
                         }}
                       >
-                        世襲{report.politician.hereditary}
+                        {report.politician.hereditary === '1代目' ? '世襲ではない' : `世襲${report.politician.hereditary}`}
                       </span>
                     )}
                   </div>
@@ -218,7 +218,7 @@ function ReportContent() {
                       return (
                         <button
                           onClick={() => setShowMBTIDetails(!showMBTIDetails)}
-                          className="px-3 py-1.5 md:px-5 md:py-2.5 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 md:gap-2 cursor-pointer font-semibold text-xs md:text-sm"
+                          className="px-[0.9rem] py-[0.45rem] md:px-6 md:py-3 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 md:gap-2 cursor-pointer font-semibold text-[0.9rem] md:text-[1.05rem]"
                           style={{
                             backgroundColor: colors.bg,
                             borderWidth: '2px',
@@ -228,7 +228,7 @@ function ReportContent() {
                           }}
                         >
                           <span>{mbtiDetails.typeName}（{hereditaryLabel}）</span>
-                          {showMBTIDetails ? <ChevronUp className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <ChevronDown className="w-3.5 h-3.5 md:w-5 md:h-5" />}
+                          {showMBTIDetails ? <ChevronUp className="w-[1.05rem] h-[1.05rem] md:w-6 md:h-6" /> : <ChevronDown className="w-[1.05rem] h-[1.05rem] md:w-6 md:h-6" />}
                         </button>
                       );
                     })()}
@@ -238,14 +238,14 @@ function ReportContent() {
                   {showMBTIDetails && (() => {
                     const mbtiDetails = calculatePoliticianMBTIDetails(report.transactions, report.summary, report.politician);
                     return (
-                      <div className="mt-2 p-4 bg-white border-2 border-teal-400 rounded-lg shadow-lg mx-auto" style={{ maxWidth: '80%' }}>
+                      <div className="mt-2 p-4 bg-white border-2 border-teal-400 rounded-lg shadow-lg mx-auto max-w-[90%] md:max-w-[80%]">
                         {/* Classifications List */}
                         <div className="mb-4 flex flex-wrap gap-2 justify-center">
                           <span className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                             {mbtiDetails.dimensions.R_P.value === 'R' ? '潤沢な資金' : '乏しい資金'}
                           </span>
                           <span className="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
-                            {mbtiDetails.dimensions.X_M.value === 'X' ? '美食家' : '税金で食事しない'}
+                            {mbtiDetails.dimensions.X_M.value === 'X' ? '美食家' : '倹約家'}
                           </span>
                           <span className="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
                             {mbtiDetails.dimensions.L_F.value === 'L' ? '派閥リーダー' : '派閥フォロワー'}
@@ -280,7 +280,7 @@ function ReportContent() {
                           <div>
                             <div className="relative">
                               <div className="flex justify-between text-xs mb-1 text-text-secondary">
-                                <span>税金で食事しない</span>
+                                <span>倹約家</span>
                                 <span>美食家</span>
                               </div>
                               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -393,7 +393,7 @@ function ReportContent() {
                           return (
                             <button
                               onClick={() => setShowMBTIDetails(!showMBTIDetails)}
-                              className="px-3 py-1.5 md:px-5 md:py-2.5 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 md:gap-2 cursor-pointer font-semibold text-xs md:text-sm"
+                              className="px-[0.9rem] py-[0.45rem] md:px-6 md:py-3 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 md:gap-2 cursor-pointer font-semibold text-[0.9rem] md:text-[1.05rem]"
                               style={{
                                 backgroundColor: colors.bg,
                                 borderWidth: '2px',
@@ -403,7 +403,7 @@ function ReportContent() {
                               }}
                             >
                               <span>{mbtiDetails.typeName}</span>
-                              {showMBTIDetails ? <ChevronUp className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <ChevronDown className="w-3.5 h-3.5 md:w-5 md:h-5" />}
+                              {showMBTIDetails ? <ChevronUp className="w-[1.05rem] h-[1.05rem] md:w-6 md:h-6" /> : <ChevronDown className="w-[1.05rem] h-[1.05rem] md:w-6 md:h-6" />}
                             </button>
                           );
                         })()}
@@ -418,14 +418,14 @@ function ReportContent() {
                   {showMBTIDetails && (() => {
                     const mbtiDetails = calculatePoliticianMBTIDetails(report.transactions, report.summary, report.politician);
                     return (
-                      <div className="mt-2 p-4 bg-white border-2 border-teal-400 rounded-lg shadow-lg mx-auto" style={{ maxWidth: '80%' }}>
+                      <div className="mt-2 p-4 bg-white border-2 border-teal-400 rounded-lg shadow-lg mx-auto max-w-[90%] md:max-w-[80%]">
                         {/* Classifications List */}
                         <div className="mb-4 flex flex-wrap gap-2 justify-center">
                           <span className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                             {mbtiDetails.dimensions.R_P.value === 'R' ? '潤沢な資金' : '乏しい資金'}
                           </span>
                           <span className="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
-                            {mbtiDetails.dimensions.X_M.value === 'X' ? '美食家' : '税金で食事しない'}
+                            {mbtiDetails.dimensions.X_M.value === 'X' ? '美食家' : '倹約家'}
                           </span>
                           <span className="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
                             {mbtiDetails.dimensions.L_F.value === 'L' ? '派閥リーダー' : '派閥フォロワー'}
@@ -460,7 +460,7 @@ function ReportContent() {
                           <div>
                             <div className="relative">
                               <div className="flex justify-between text-xs mb-1 text-text-secondary">
-                                <span>税金で食事しない</span>
+                                <span>倹約家</span>
                                 <span>美食家</span>
                               </div>
                               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -562,7 +562,7 @@ function ReportContent() {
                       return (
                         <button
                           onClick={() => setShowMBTIDetails(!showMBTIDetails)}
-                          className="px-3 py-1.5 md:px-5 md:py-2.5 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 md:gap-2 cursor-pointer font-semibold text-xs md:text-sm"
+                          className="px-[0.9rem] py-[0.45rem] md:px-6 md:py-3 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 md:gap-2 cursor-pointer font-semibold text-[0.9rem] md:text-[1.05rem]"
                           style={{
                             backgroundColor: colors.bg,
                             borderWidth: '2px',
@@ -572,7 +572,7 @@ function ReportContent() {
                           }}
                         >
                           <span>{mbtiDetails.typeName}（{hereditaryLabel}）</span>
-                          {showMBTIDetails ? <ChevronUp className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <ChevronDown className="w-3.5 h-3.5 md:w-5 md:h-5" />}
+                          {showMBTIDetails ? <ChevronUp className="w-[1.05rem] h-[1.05rem] md:w-6 md:h-6" /> : <ChevronDown className="w-[1.05rem] h-[1.05rem] md:w-6 md:h-6" />}
                         </button>
                       );
                     })()}
@@ -582,14 +582,14 @@ function ReportContent() {
                   {showMBTIDetails && (() => {
                     const mbtiDetails = calculatePoliticianMBTIDetails(report.transactions, report.summary, report.politician);
                     return (
-                      <div className="mt-2 p-4 bg-white border-2 border-teal-400 rounded-lg shadow-lg mx-auto" style={{ maxWidth: '80%' }}>
+                      <div className="mt-2 p-4 bg-white border-2 border-teal-400 rounded-lg shadow-lg mx-auto max-w-[90%] md:max-w-[80%]">
                         {/* Classifications List */}
                         <div className="mb-4 flex flex-wrap gap-2 justify-center">
                           <span className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                             {mbtiDetails.dimensions.R_P.value === 'R' ? '潤沢な資金' : '乏しい資金'}
                           </span>
                           <span className="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
-                            {mbtiDetails.dimensions.X_M.value === 'X' ? '美食家' : '税金で食事しない'}
+                            {mbtiDetails.dimensions.X_M.value === 'X' ? '美食家' : '倹約家'}
                           </span>
                           <span className="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
                             {mbtiDetails.dimensions.L_F.value === 'L' ? '派閥リーダー' : '派閥フォロワー'}
@@ -624,7 +624,7 @@ function ReportContent() {
                           <div>
                             <div className="relative">
                               <div className="flex justify-between text-xs mb-1 text-text-secondary">
-                                <span>税金で食事しない</span>
+                                <span>倹約家</span>
                                 <span>美食家</span>
                               </div>
                               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -728,7 +728,7 @@ function ReportContent() {
                       return (
                         <button
                           onClick={() => setShowMBTIDetails(!showMBTIDetails)}
-                          className="px-3 py-1.5 md:px-5 md:py-2.5 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 md:gap-2 cursor-pointer font-semibold text-xs md:text-sm"
+                          className="px-[0.9rem] py-[0.45rem] md:px-6 md:py-3 rounded-full backdrop-blur-md shadow-lg hover:shadow-xl transition-all duration-300 inline-flex items-center gap-1.5 md:gap-2 cursor-pointer font-semibold text-[0.9rem] md:text-[1.05rem]"
                           style={{
                             backgroundColor: colors.bg,
                             borderWidth: '2px',
@@ -738,7 +738,7 @@ function ReportContent() {
                           }}
                         >
                           <span>{mbtiDetails.typeName}</span>
-                          {showMBTIDetails ? <ChevronUp className="w-3.5 h-3.5 md:w-5 md:h-5" /> : <ChevronDown className="w-3.5 h-3.5 md:w-5 md:h-5" />}
+                          {showMBTIDetails ? <ChevronUp className="w-[1.05rem] h-[1.05rem] md:w-6 md:h-6" /> : <ChevronDown className="w-[1.05rem] h-[1.05rem] md:w-6 md:h-6" />}
                         </button>
                       );
                     })()}
@@ -748,14 +748,14 @@ function ReportContent() {
                   {showMBTIDetails && (() => {
                     const mbtiDetails = calculatePoliticianMBTIDetails(report.transactions, report.summary, report.politician);
                     return (
-                      <div className="mt-2 p-4 bg-white border-2 border-teal-400 rounded-lg shadow-lg mx-auto" style={{ maxWidth: '80%' }}>
+                      <div className="mt-2 p-4 bg-white border-2 border-teal-400 rounded-lg shadow-lg mx-auto max-w-[90%] md:max-w-[80%]">
                         {/* Classifications List */}
                         <div className="mb-4 flex flex-wrap gap-2 justify-center">
                           <span className="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
                             {mbtiDetails.dimensions.R_P.value === 'R' ? '潤沢な資金' : '乏しい資金'}
                           </span>
                           <span className="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
-                            {mbtiDetails.dimensions.X_M.value === 'X' ? '美食家' : '税金で食事しない'}
+                            {mbtiDetails.dimensions.X_M.value === 'X' ? '美食家' : '倹約家'}
                           </span>
                           <span className="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
                             {mbtiDetails.dimensions.L_F.value === 'L' ? '派閥リーダー' : '派閥フォロワー'}
@@ -790,7 +790,7 @@ function ReportContent() {
                           <div>
                             <div className="relative">
                               <div className="flex justify-between text-xs mb-1 text-text-secondary">
-                                <span>税金で食事しない</span>
+                                <span>倹約家</span>
                                 <span>美食家</span>
                               </div>
                               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import FileUpload from '@/components/upload/FileUpload';
 import PoliticianSummaryTable from '@/components/landing/PoliticianSummaryTable';
@@ -8,10 +8,25 @@ import { ExpenseReport } from '@/lib/types';
 import { asoStaticReport, asoSummaryData } from '@/lib/data/aso-static-data';
 import { hayashiStaticReport, hayashiSummaryData } from '@/lib/data/hayashi-static-data';
 import { ChevronDown, ChevronUp, Upload } from 'lucide-react';
+import { calculateOverallScore, calculatePoliticianMBTIDetails } from '@/lib/calculations/scores';
 
 export default function Home() {
   const router = useRouter();
   const [showUpload, setShowUpload] = useState(false);
+
+  // Calculate scores and MBTI for politicians
+  const enrichedSummaryData = useMemo(() => {
+    const asoScore = calculateOverallScore(asoStaticReport.transactions, asoStaticReport.summary, asoStaticReport.politician);
+    const asoMBTI = calculatePoliticianMBTIDetails(asoStaticReport.transactions, asoStaticReport.summary, asoStaticReport.politician);
+
+    const hayashiScore = calculateOverallScore(hayashiStaticReport.transactions, hayashiStaticReport.summary, hayashiStaticReport.politician);
+    const hayashiMBTI = calculatePoliticianMBTIDetails(hayashiStaticReport.transactions, hayashiStaticReport.summary, hayashiStaticReport.politician);
+
+    return [
+      { ...asoSummaryData, overallScore: asoScore, mbtiType: asoMBTI.typeName, mbtiTypeCode: asoMBTI.typeCode },
+      { ...hayashiSummaryData, overallScore: hayashiScore, mbtiType: hayashiMBTI.typeName, mbtiTypeCode: hayashiMBTI.typeCode },
+    ];
+  }, []);
 
   const handleReportLoaded = (report: ExpenseReport) => {
     try {
@@ -57,7 +72,7 @@ export default function Home() {
 
         {/* Static Summary Table */}
         <PoliticianSummaryTable
-          data={[asoSummaryData, hayashiSummaryData]}
+          data={enrichedSummaryData}
           onViewDetails={handleViewDetails}
         />
 
@@ -74,9 +89,9 @@ export default function Home() {
               </span>
             </div>
             {showUpload ? (
-              <ChevronUp className="w-5 h-5 text-text-secondary" />
+              <ChevronUp className="w-6 h-6 text-text-secondary" />
             ) : (
-              <ChevronDown className="w-5 h-5 text-text-secondary" />
+              <ChevronDown className="w-6 h-6 text-text-secondary" />
             )}
           </button>
 

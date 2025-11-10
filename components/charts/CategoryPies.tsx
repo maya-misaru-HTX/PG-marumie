@@ -74,7 +74,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
 
   const incomeData = combineSmallCategories(income.categories, income.total, true);
 
-  const renderCustomizedLabel = (data: CategoryBreakdown[], fontSize: number) => ({
+  const renderCustomizedLabel = (data: CategoryBreakdown[]) => ({
     cx,
     cy,
     midAngle,
@@ -83,15 +83,31 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
     percent,
     index,
   }: any) => {
-    if (percent < 0.05) return null; // Don't show labels for slices < 5%
+    // Calculate dynamic font size based on outer radius (about 17.7% of radius)
+    let fontSize = outerRadius * 0.177;
 
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.65;
+    // Make font 10% smaller for slices 5% or below
+    if (percent <= 0.05) {
+      fontSize = fontSize * 0.9;
+    }
+
+    // Show all labels, but position smaller ones outside
+    const isSmallSlice = percent <= 0.04; // Slices 4% or less go outside
+
+    // For small slices, position outside the pie; for larger ones, position inside
+    const radius = isSmallSlice
+      ? outerRadius + 25 // Outside the pie
+      : innerRadius + (outerRadius - innerRadius) * 0.75; // Inside the pie, closer to outer border
+
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
     // Get the color for this slice
     const sliceColor = data[index]?.color || '#000000';
-    const textColor = getTextColor(sliceColor);
+    // For labels outside the pie, use the slice color; inside use contrasting color
+    const textColor = isSmallSlice ? sliceColor : getTextColor(sliceColor);
+
+    const percentValue = Math.round(percent * 100);
 
     return (
       <text
@@ -100,10 +116,10 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
         fill={textColor}
         textAnchor="middle"
         dominantBaseline="central"
-        fontSize={fontSize}
         fontWeight="bold"
       >
-        {`${Math.round(percent * 100)}%`}
+        <tspan fontSize={fontSize}>{percentValue}</tspan>
+        <tspan fontSize={fontSize * 0.75}>%</tspan>
       </text>
     );
   };
@@ -113,7 +129,7 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
       {/* Income Pie */}
       <Card>
         <div className="mb-3 md:mb-4">
-          <h2 className="text-sm md:text-xl lg:text-2xl font-bold text-text-primary whitespace-nowrap">🚪 お金の入り口</h2>
+          <h2 className="text-base md:text-2xl lg:text-3xl font-bold text-text-primary whitespace-nowrap">🚪 お金の入り口</h2>
         </div>
 
         {income.categories.length > 0 ? (
@@ -122,14 +138,14 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
             <div className="flex flex-col items-center justify-center gap-4 md:hidden">
               {/* Pie Chart */}
               <div className="flex-shrink-0">
-                <PieChart width={200} height={200}>
+                <PieChart width={220} height={220}>
                   <Pie
                     data={incomeData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={renderCustomizedLabel(incomeData, 12)}
-                    outerRadius={80}
+                    label={renderCustomizedLabel(incomeData)}
+                    outerRadius={95}
                     fill="#8884d8"
                     dataKey="amount"
                     startAngle={90}
@@ -143,21 +159,23 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
               </div>
 
               {/* Legend below */}
-              <div className="w-full space-y-2 flex flex-col items-start ml-[150px]">
-                {incomeData.map((cat) => (
-                  <div key={cat.category} className="flex items-center gap-3 text-xs">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: cat.color }}
-                      />
-                      <span className="text-text-primary whitespace-nowrap">{cat.category}</span>
+              <div className="flex justify-center w-full">
+                <div className="space-y-2 flex flex-col w-full max-w-[227px]">
+                  {incomeData.map((cat) => (
+                    <div key={cat.category} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: cat.color }}
+                        />
+                        <span className="font-bold text-text-primary whitespace-nowrap">{cat.category}</span>
+                      </div>
+                      <span className="font-medium text-text-primary whitespace-nowrap">
+                        {formatJapaneseCurrency(cat.amount)}
+                      </span>
                     </div>
-                    <span className="font-medium text-text-secondary whitespace-nowrap">
-                      {formatJapaneseCurrency(cat.amount)}
-                    </span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -165,14 +183,14 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
             <div className="hidden md:flex flex-row items-center justify-center">
               {/* Pie Chart */}
               <div className="flex-shrink-0">
-                <PieChart width={280} height={280}>
+                <PieChart width={308} height={308}>
                   <Pie
                     data={incomeData}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={renderCustomizedLabel(incomeData, 16)}
-                    outerRadius={120}
+                    label={renderCustomizedLabel(incomeData)}
+                    outerRadius={132}
                     fill="#8884d8"
                     dataKey="amount"
                     startAngle={90}
@@ -186,17 +204,17 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
               </div>
 
               {/* Legend on the right */}
-              <div className="min-w-0 space-y-3 pl-[40px]">
+              <div className="space-y-3 pl-[20px] w-full max-w-[275px]">
                 {incomeData.map((cat) => (
-                  <div key={cat.category} className="flex items-center gap-4 text-base">
-                    <div className="flex items-center gap-2.5 min-w-0">
+                  <div key={cat.category} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2.5">
                       <div
                         className="w-3.5 h-3.5 rounded-full flex-shrink-0"
                         style={{ backgroundColor: cat.color }}
                       />
-                      <span className="text-text-primary truncate">{cat.category}</span>
+                      <span className="font-bold text-text-primary whitespace-nowrap">{cat.category}</span>
                     </div>
-                    <span className="font-medium text-text-secondary whitespace-nowrap">
+                    <span className="font-medium text-text-primary whitespace-nowrap">
                       {formatJapaneseCurrency(cat.amount)}
                     </span>
                   </div>

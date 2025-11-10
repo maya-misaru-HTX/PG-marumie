@@ -76,12 +76,12 @@ export default function TopDonors({ transactions, incomeCategories }: TopDonorsP
   return (
     <Card>
       <div className="mb-4 flex items-center justify-between gap-2">
-        <h2 className="text-sm md:text-xl lg:text-2xl font-bold text-text-primary whitespace-nowrap">💰 トップ収入源</h2>
+        <h2 className="text-base md:text-2xl lg:text-3xl font-bold text-text-primary whitespace-nowrap">💰 トップ収入源</h2>
         <a
           href="https://political-finance-database.com/"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[10px] sm:text-xs md:text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline whitespace-nowrap flex-shrink-0"
+          className="text-xs sm:text-sm md:text-base font-medium text-primary-600 hover:text-primary-700 hover:underline whitespace-nowrap flex-shrink-0"
         >
           🔍 もっと調べる！
         </a>
@@ -115,15 +115,15 @@ export default function TopDonors({ transactions, incomeCategories }: TopDonorsP
                   {ranking}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className={`text-xs md:text-base leading-tight mb-0.5 truncate ${isTop1 ? 'font-bold text-text-primary' : 'font-medium text-text-primary'}`}>
+                  <p className={`text-xs md:text-base leading-tight mb-0.5 break-words ${isTop1 ? 'font-bold text-text-primary' : 'font-medium text-text-primary'}`}>
                     {donor.name}
                   </p>
-                  <p className="text-[10px] md:text-sm text-text-secondary font-normal truncate">
+                  <p className="text-[10px] md:text-sm text-text-secondary font-normal break-words">
                     {donor.category}
                   </p>
                 </div>
               </div>
-              <p className={`font-bold text-xs md:text-base whitespace-nowrap ml-2 md:ml-3 ${isTop1 ? 'text-teal-700' : 'text-primary-600'}`}>
+              <p className={`font-bold text-xs md:text-base whitespace-nowrap ml-4 md:ml-6 ${isTop1 ? 'text-teal-700' : 'text-primary-600'}`}>
                 {formatJapaneseCurrency(donor.amount)}
               </p>
             </div>

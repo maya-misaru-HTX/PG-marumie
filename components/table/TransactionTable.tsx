@@ -318,18 +318,18 @@ export default function TransactionTable({ transactions }: TransactionTableProps
     <Card>
       {/* Title */}
       <div className="mb-3">
-        <h2 className="text-sm md:text-xl lg:text-2xl font-bold text-text-primary whitespace-nowrap">📝 出入金の詳細</h2>
+        <h2 className="text-base md:text-2xl lg:text-3xl font-bold text-text-primary whitespace-nowrap">📝 出入金の詳細</h2>
       </div>
 
       {/* Summary Line */}
       {hasActiveFilters && (
         <div className="mb-4">
           <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-            <h2 className="text-xs md:text-base lg:text-lg whitespace-nowrap break-words">
+            <h2 className="text-[0.825rem] md:text-[1.1rem] lg:text-[1.2375rem] whitespace-nowrap break-words">
               <span className="text-text-secondary font-normal">選択中: </span>
               <span className="font-bold text-text-primary">{Array.from(new Set([...expenseCategoryFilter, ...incomeCategoryFilter])).join(', ') || 'なし'}</span>
             </h2>
-            <div className="flex items-center gap-3 md:gap-4 text-xs md:text-base lg:text-lg">
+            <div className="flex items-center gap-3 md:gap-4 text-[0.825rem] md:text-[1.1rem] lg:text-[1.2375rem]">
               <span className="text-text-secondary whitespace-nowrap">件数: <span className="font-bold text-text-primary">{filteredTotals.count}件</span></span>
               <span className="text-text-secondary whitespace-nowrap">合計金額: <span className="font-bold text-red-600">{formatJapaneseCurrency(filteredTotals.totalAmount)}</span></span>
             </div>
@@ -479,44 +479,44 @@ export default function TransactionTable({ transactions }: TransactionTableProps
 
       {/* Table - with scrollable container */}
       <div className="overflow-x-auto">
-        <div className="min-w-[540px] max-h-[480px] overflow-y-auto border-2 border-transparent rounded-[16px]">
+        <div className="min-w-[420px] max-h-[480px] overflow-y-auto border-2 border-transparent rounded-[16px]">
           <table className="w-full md:table-auto">
             <thead className="sticky top-0 bg-white border-b-2 border-neutral-200 z-10">
               <tr>
                 <th
-                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[35%] md:w-auto"
+                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[40%] md:w-auto"
                   onClick={() => handleSort('description')}
                 >
                   <div className="flex items-center gap-1 md:gap-2">
-                    <span className="text-xs md:text-sm font-bold text-text-primary">項目</span>
+                    <span className="text-[0.825rem] md:text-[0.9625rem] font-bold text-text-primary">項目</span>
                     <SortIcon field="description" />
                   </div>
                 </th>
                 <th
-                  className="text-right py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[25%] md:w-auto"
+                  className="text-right py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[40%] md:w-auto"
                   onClick={() => handleSort('amount')}
                 >
                   <div className="flex items-center justify-end gap-1 md:gap-2">
-                    <span className="text-xs md:text-sm font-bold text-text-primary">金額</span>
+                    <span className="text-[0.825rem] md:text-[0.9625rem] font-bold text-text-primary">金額</span>
                     <SortIcon field="amount" />
                   </div>
                 </th>
                 <th
-                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[25%] md:w-auto"
-                  onClick={() => handleSort('category')}
-                >
-                  <div className="flex items-center gap-1 md:gap-2">
-                    <span className="text-xs md:text-sm font-bold text-text-primary">カテゴリー</span>
-                    <SortIcon field="category" />
-                  </div>
-                </th>
-                <th
-                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[15%] md:w-auto"
+                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[20%] md:w-auto whitespace-nowrap"
                   onClick={() => handleSort('date')}
                 >
                   <div className="flex items-center gap-1 md:gap-2">
-                    <span className="text-xs md:text-sm font-bold text-text-primary">日付</span>
+                    <span className="text-[0.825rem] md:text-[0.9625rem] font-bold text-text-primary">日付</span>
                     <SortIcon field="date" />
+                  </div>
+                </th>
+                <th
+                  className="hidden md:table-cell text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[25%] md:w-auto"
+                  onClick={() => handleSort('category')}
+                >
+                  <div className="flex items-center gap-1 md:gap-2">
+                    <span className="text-[0.825rem] md:text-[0.9625rem] font-bold text-text-primary">カテゴリー</span>
+                    <SortIcon field="category" />
                   </div>
                 </th>
               </tr>
@@ -527,18 +527,18 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   key={transaction.id}
                   className="border-b border-neutral-100 hover:bg-neutral-50"
                 >
-                  <td className="py-2 px-2 md:py-3 md:px-4 w-[35%] md:w-auto">
-                    <p className="text-xs md:text-sm font-medium text-text-primary truncate max-w-[120px] md:max-w-none md:whitespace-nowrap">
+                  <td className="py-2 px-2 md:py-3 md:px-4 w-[40%] md:w-auto">
+                    <p className="text-[0.825rem] md:text-[0.9625rem] font-medium text-text-primary break-words leading-tight">
                       {transaction.description}
                     </p>
                     {transaction.location && (
-                      <p className="text-[10px] md:text-xs text-text-secondary mt-0.5 md:mt-1 truncate max-w-[120px] md:max-w-none md:whitespace-nowrap">
+                      <p className="text-xs md:text-[0.825rem] text-text-secondary mt-0.5 md:mt-1 break-words leading-tight">
                         {transaction.location}
                       </p>
                     )}
                   </td>
                   <td
-                    className={`py-2 px-2 md:py-3 md:px-4 text-right text-xs md:text-sm font-medium w-[25%] md:w-auto ${
+                    className={`py-2 px-2 md:py-3 md:px-4 text-right text-[0.825rem] md:text-[0.9625rem] font-medium w-[40%] md:w-auto whitespace-nowrap ${
                       transaction.type === 'income'
                         ? 'text-primary-600'
                         : 'text-red-600'
@@ -547,15 +547,15 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                     {transaction.type === 'income' ? '+' : '-'}
                     {formatJapaneseCurrency(transaction.amount)}
                   </td>
-                  <td className="py-2 px-2 md:py-3 md:px-4 w-[25%] md:w-auto">
+                  <td className="py-2 px-2 md:py-3 md:px-4 text-[0.825rem] md:text-[0.9625rem] text-text-secondary w-[20%] md:w-auto whitespace-nowrap">
+                    {transaction.date.slice(5)}
+                  </td>
+                  <td className="hidden md:table-cell py-2 px-2 md:py-3 md:px-4 w-[25%] md:w-auto">
                     <Badge
                       color={transaction.type === 'income' ? '#64D8C6' : '#EF4444'}
                     >
                       {transaction.category}
                     </Badge>
-                  </td>
-                  <td className="py-2 px-2 md:py-3 md:px-4 text-xs md:text-sm text-text-secondary w-[15%] md:w-auto">
-                    {transaction.date.slice(5)}
                   </td>
                 </tr>
               ))}

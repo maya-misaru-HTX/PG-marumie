@@ -72,11 +72,11 @@ export default function PoliticianRadarChart({ transactions, summary, politician
     // Font size adjustments:
     // 集金力: 1.5x (same as before)
     // 美食力 & 派閥力: 1.35x (10% smaller than 集金力)
-    // Others: 1x (normal)
+    // 当選力 & 世襲力: 1.35x (same as 美食力 & 派閥力)
     let adjustedFontSize;
     if (metricName === '集金力') {
       adjustedFontSize = fontSize * 1.5;
-    } else if (metricName === '美食力' || metricName === '派閥力') {
+    } else if (metricName === '美食力' || metricName === '派閥力' || metricName === '当選力' || metricName === '世襲力') {
       adjustedFontSize = fontSize * 1.35;
     } else {
       adjustedFontSize = fontSize;
@@ -221,16 +221,16 @@ export default function PoliticianRadarChart({ transactions, summary, politician
 
       {/* Explanation Panel */}
       {showExplanation && (
-        <div data-explanation className="mt-3 md:mt-4 p-3 md:p-4 bg-white border-2 border-teal-400 rounded-lg shadow-lg">
+        <div data-explanation className="mt-3 md:mt-4 p-3 md:p-4 bg-white border-2 border-teal-400 rounded-lg shadow-lg mx-auto max-w-[90%] md:max-w-[80%]">
           <div className="space-y-1.5 md:space-y-2">
             {metricDefinitions.map((metric, index) => (
               <div key={index} className="flex gap-2 md:gap-3">
-                <div className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 flex items-center justify-center bg-teal-100 text-teal-700 rounded-full text-[10px] md:text-xs font-bold">
+                <div className="flex-shrink-0 w-5 h-5 md:w-6 md:h-6 flex items-center justify-center bg-teal-100 text-teal-700 rounded-full text-xs font-bold">
                   {index + 1}
                 </div>
                 <div className="flex-1">
                   <h4 className="text-xs md:text-sm font-bold text-text-primary mb-0.5">{metric.title}</h4>
-                  <p className="text-[11px] md:text-sm text-text-secondary whitespace-nowrap">{metric.description}</p>
+                  <p className="text-xs md:text-sm text-text-secondary whitespace-nowrap">{metric.description}</p>
                 </div>
               </div>
             ))}
@@ -239,8 +239,8 @@ export default function PoliticianRadarChart({ transactions, summary, politician
           {/* Total Score Calculation Explanation */}
           <div className="mt-3 md:mt-4 pt-3 md:pt-4 border-t-2 border-teal-200">
             <h4 className="text-xs md:text-sm font-bold text-text-primary mb-1 md:mb-1.5">総合スコアの計算方法</h4>
-            <p className="text-[11px] md:text-sm text-text-secondary leading-relaxed">
-              総合スコア = （集金力 + 美食力 + 派閥力 + 当選力）× 世襲力
+            <p className="text-xs md:text-sm text-text-secondary leading-relaxed">
+              （集金力 + 美食力 + 派閥力 + 当選力）× 世襲力
             </p>
           </div>
         </div>
