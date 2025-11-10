@@ -484,7 +484,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
             <thead className="sticky top-0 bg-white border-b-2 border-neutral-200 z-10">
               <tr>
                 <th
-                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[40%] md:w-auto"
+                  className="text-left py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[36%] md:w-auto"
                   onClick={() => handleSort('description')}
                 >
                   <div className="flex items-center gap-1 md:gap-2">
@@ -493,7 +493,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   </div>
                 </th>
                 <th
-                  className="text-right py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[40%] md:w-auto"
+                  className="text-right py-2 px-2 md:py-3 md:px-4 cursor-pointer hover:bg-neutral-50 w-[44%] md:w-auto"
                   onClick={() => handleSort('amount')}
                 >
                   <div className="flex items-center justify-end gap-1 md:gap-2">
@@ -527,7 +527,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                   key={transaction.id}
                   className="border-b border-neutral-100 hover:bg-neutral-50"
                 >
-                  <td className="py-2 px-2 md:py-3 md:px-4 w-[40%] md:w-auto">
+                  <td className="py-2 px-2 md:py-3 md:px-4 w-[36%] md:w-auto">
                     <p className="text-[0.825rem] md:text-[0.9625rem] font-medium text-text-primary break-words leading-tight">
                       {transaction.description}
                     </p>
@@ -538,7 +538,7 @@ export default function TransactionTable({ transactions }: TransactionTableProps
                     )}
                   </td>
                   <td
-                    className={`py-2 px-2 md:py-3 md:px-4 text-right text-[0.825rem] md:text-[0.9625rem] font-medium w-[40%] md:w-auto whitespace-nowrap ${
+                    className={`py-2 px-2 md:py-3 md:px-4 text-right text-[0.825rem] md:text-[0.9625rem] font-medium w-[44%] md:w-auto whitespace-nowrap ${
                       transaction.type === 'income'
                         ? 'text-primary-600'
                         : 'text-red-600'
