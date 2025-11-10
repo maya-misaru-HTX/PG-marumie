@@ -83,6 +83,11 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
     percent,
     index,
   }: any) => {
+    // Don't show labels for slices 4% or under
+    if (percent <= 0.04) {
+      return null;
+    }
+
     // Calculate dynamic font size based on outer radius (about 17.7% of radius)
     let fontSize = outerRadius * 0.177;
 
@@ -91,8 +96,8 @@ export default function CategoryPies({ income, expenses }: CategoryPiesProps) {
       fontSize = fontSize * 0.9;
     }
 
-    // Show all labels, but position smaller ones outside
-    const isSmallSlice = percent <= 0.04; // Slices 4% or less go outside
+    // All visible slices go inside the pie
+    const isSmallSlice = false;
 
     // For small slices, position outside the pie; for larger ones, position inside
     const radius = isSmallSlice
